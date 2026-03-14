@@ -369,7 +369,7 @@
   .place-icon.sight { background: rgba(46,110,166,0.25); }
   .place-icon.hotel { background: rgba(212,83,75,0.25); }
 
-  .place-info { flex: 1; min-width: 0; padding-right: 24px; }
+  .place-info { flex: 1; min-width: 0; padding-right: 56px; }
 
   .place-name {
     font-size: 13px;
@@ -407,6 +407,27 @@
     font-weight: 500;
     white-space: nowrap;
   }
+
+  .list-gmaps-btn {
+    position: absolute;
+    right: 38px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: rgba(201,168,76,0.12);
+    border: 1px solid rgba(201,168,76,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    text-decoration: none;
+    transition: background 0.15s, transform 0.1s;
+    flex-shrink: 0;
+    z-index: 2;
+  }
+  .list-gmaps-btn:hover { background: rgba(201,168,76,0.25); transform: translateY(-50%) scale(1.1); }
 
   /* ── Map ── */
   #map {
@@ -555,10 +576,12 @@
   }
 
   .btn-directions {
-    background: var(--navy);
+    background: #1a73e8;
     color: #fff;
+    font-weight: 700;
+    letter-spacing: 0.02em;
   }
-  .btn-directions:hover { background: var(--navy-deep); }
+  .btn-directions:hover { background: #1557b0; }
 
   .btn-itinerary {
     background: rgba(42,138,74,0.1);
@@ -868,6 +891,15 @@
     .place-item { padding: 12px 14px; gap: 10px; -webkit-tap-highlight-color: transparent; }
     .place-name { font-size: 14px; }
     .place-meta { font-size: 11px; }
+
+    .list-gmaps-btn {
+      width: 36px;
+      height: 36px;
+      font-size: 16px;
+      border-radius: 8px;
+      right: 40px;
+      -webkit-tap-highlight-color: transparent;
+    }
 
     /* Map controls */
     .map-controls {
@@ -1500,12 +1532,16 @@ function renderList() {
       ? '<span class="visited-badge">✓</span>'
       : '<span class="itin-badge">' + (itinIdx >= 0 ? itinIdx + 1 : '') + '</span>';
 
+    const gmapsBtnHtml = p.type !== 'hotel'
+      ? '<a class="list-gmaps-btn" href="' + gmapsUrl(p) + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Open in Google Maps">🧭</a>'
+      : '';
+
     div.innerHTML =
       '<div class="place-icon ' + p.type + '">' + p.emoji + '</div>' +
       '<div class="place-info"><div class="place-name">' + p.name + '</div>' +
       '<div class="place-meta"><span>' + p.cuisine + '</span>' +
       '<span class="price-tag">' + priceDisplay + '</span>' + walkDisplay + '</div></div>' +
-      badge;
+      gmapsBtnHtml + badge;
     list.appendChild(div);
   });
 }
@@ -1625,7 +1661,7 @@ function init() {
 
     const actionsHtml = p.type !== 'hotel'
       ? '<div class="popup-actions">' +
-        '<a class="popup-action-btn btn-directions" href="' + gmapsUrl(p) + '" target="_blank" rel="noopener">🧭 Directions</a>' +
+        '<button class="popup-action-btn btn-directions" onclick="event.stopPropagation();window.open(\'' + gmapsUrl(p) + '\',\'_blank\')">🧭 Google Maps</button>' +
         '<button class="popup-action-btn btn-itinerary" onclick="addToItinerary(' + p.id + ')">📋 Route</button>' +
         '<button id="visited-btn-' + p.id + '" class="popup-action-btn btn-visited" onclick="toggleVisited(' + p.id + ')">☐ Visited</button>' +
         '</div>'
