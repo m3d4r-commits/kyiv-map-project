@@ -8,30 +8,35 @@ The page presents a two-panel layout: a collapsible sidebar on the left and a li
 
 ### Places
 
-18 curated locations are pinned on the map, colour-coded by type:
+34 locations are pinned on the map, colour-coded by type:
 
 | Type | Count | Colour |
 |---|---|---|
 | Your Hotel (base) | 1 | 🔴 Red |
+| Hotels | 16 | 🔴 Red |
 | Restaurants | 9 | 🟡 Gold |
 | Sights & Attractions | 8 | 🔵 Blue |
+
+Itinerary routes are drawn in 🟢 Green when active.
 
 Each place card and map popup shows the name, category, price range (UAH / EUR / GBP), opening hours, a short description, and walking distance & time from the home base.
 
 ### Sidebar features
 
 - **Search** — live text search that filters the place list and map markers as you type.
-- **Filter tabs** — switch between All, 🍽 Dining, and 🏛 Sights.
+- **Filter tabs** — switch between All, 🏨 Hotels, 🍽 Dining, and 🏛 Sights.
 - **Sort options** — order results by Default, Distance (nearest first), Price (low → high), or A → Z.
 - **Itinerary Mode** — tap places to add them to a custom route. The route is drawn on the map and a summary panel shows total distance, estimated walking time, and number of stops.
 - **Itinerary Google Maps export** — the itinerary summary panel includes an "🗺️ Open in Google Maps" link that opens the full multi-stop route in Google Maps.
 - **Mark Visited** — tap "☐ Visited" in any popup to mark a place as done. Visited cards show a ✓ badge and are visually dimmed in the list.
 - **Google Maps quick-link** — every place card has a 🧭 button that opens the location directly in Google Maps.
-- **Currency reference** — chip showing hardcoded reference rates (£1 = 59 UAH, €1 = 41 UAH) alongside each price.
+- **Currency reference** — chips showing hardcoded reference rates (£1 = 59 UAH, €1 = 50 UAH) in the sidebar header.
 
 ### Map features
 
+- **Legend** — a colour-coded legend (Hotel, Restaurant, Sight / Attraction, Itinerary Route) sits in the bottom-right of the map on desktop. Zoom +/− controls are positioned directly above it. On mobile the legend moves to the top-left; on very small screens (≤375 px) it is hidden.
 - **Marker clustering** — nearby markers group together at low zoom levels.
+- **Top control bar** — a row of buttons in the top-right: 📍 Your Hotel (pan to base), 📍 Set Base, ◎ GPS, ⊡ Fit All, and 🗺 Map Style.
 - **Map styles** — cycle through Light, Dark, Streets, and Satellite tile layers with the 🗺 button.
 - **Fit All** — re-zooms the map to show every visible marker.
 - **Real-time walking routes** — routes follow actual footpaths via the Valhalla routing API (OSRM used as a fallback). Each single-place popup shows a 🧭 Google Maps directions button.
@@ -42,13 +47,15 @@ Each place card and map popup shows the name, category, price range (UAH / EUR /
 
 ### Responsive design
 
-On mobile the sidebar slides up from the bottom with a drag handle. Tapping a place on mobile auto-collapses the sidebar so the map is fully visible.
+On mobile (≤768 px) the sidebar slides up from the bottom with a drag handle. The legend moves to the top-left corner. Tapping a place auto-collapses the sidebar so the map is fully visible. On very small screens (≤375 px) the legend is hidden entirely to save space.
 
 ## Files
 
 | File | Description |
 |---|---|
 | `index.html` | The complete self-contained application (HTML + CSS + JS) |
+| `validation-report.md` | Audit of all 34 locations — GPS accuracy, hours, prices, URLs, and factual claims |
+| `README.md` | This file |
 
 ## Usage
 
