@@ -1,0 +1,1734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Kyiv — Dining & Sights Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" media="print" onload="this.media='all'"/>
+<style>
+  :root {
+    --navy: #1A3A5C;
+    --navy-deep: #0f2540;
+    --gold: #C9A84C;
+    --gold-light: #E8C96A;
+    --cream: #FDF8F0;
+    --warm-white: #FFFDF9;
+    --text: #1a1a1a;
+    --muted: #6b6360;
+    --restaurant: #C9A84C;
+    --sight: #2E6EA6;
+    --hotel: #D4534B;
+    --sidebar-w: 370px;
+    --green: #2a8a4a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { height: 100%; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    display: flex;
+    height: 100vh;
+    height: 100dvh; /* modern mobile browsers */
+    overflow: hidden;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* ── Sidebar ── */
+  #sidebar {
+    width: var(--sidebar-w);
+    min-width: var(--sidebar-w);
+    height: 100vh;
+    height: 100dvh;
+    background: var(--navy);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    z-index: 10;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.25);
+    transition: margin-left 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.3s;
+  }
+
+  /* Desktop collapse only */
+  @media (min-width: 769px) {
+    #sidebar.collapsed {
+      margin-left: calc(-1 * var(--sidebar-w));
+      opacity: 0;
+      pointer-events: none;
+    }
+  }
+
+  #sidebar-toggle {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    z-index: 1001;
+    background: var(--navy);
+    color: var(--gold);
+    border: 1px solid rgba(201,168,76,0.4);
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+  }
+  #sidebar-toggle:hover { background: var(--gold); color: var(--navy); }
+  #sidebar-toggle .label { font-size: 12px; }
+
+  #sidebar-header {
+    padding: 28px 24px 18px;
+    border-bottom: 1px solid rgba(201,168,76,0.25);
+    flex-shrink: 0;
+  }
+
+  #sidebar-header .eyebrow {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+
+  #sidebar-header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.15;
+  }
+
+  #sidebar-header h1 em {
+    font-style: italic;
+    color: var(--gold-light);
+  }
+
+  .rate-bar {
+    margin-top: 12px;
+    display: flex;
+    gap: 10px;
+  }
+
+  .rate-chip {
+    background: rgba(201,168,76,0.15);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-size: 10px;
+    color: var(--gold-light);
+    letter-spacing: 0.05em;
+  }
+
+  /* Search & Sort */
+  #search-sort {
+    padding: 12px 16px 0;
+    flex-shrink: 0;
+  }
+
+  #search-box {
+    width: 100%;
+    padding: 9px 12px 9px 34px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  #search-box::placeholder { color: rgba(255,255,255,0.35); }
+  #search-box:focus { border-color: var(--gold); background: rgba(255,255,255,0.1); }
+
+  .search-wrap {
+    position: relative;
+  }
+  .search-wrap::before {
+    content: '🔍';
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 13px;
+    opacity: 0.5;
+  }
+
+  #sort-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .sort-btn {
+    flex: 1;
+    padding: 5px 4px;
+    border-radius: 5px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: transparent;
+    color: rgba(255,255,255,0.45);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    letter-spacing: 0.04em;
+  }
+  .sort-btn.active { background: rgba(201,168,76,0.15); color: var(--gold-light); border-color: rgba(201,168,76,0.3); }
+  .sort-btn:hover:not(.active) { border-color: rgba(255,255,255,0.25); color: rgba(255,255,255,0.7); }
+
+  /* Filter tabs */
+  #filter-tabs {
+    display: flex;
+    padding: 10px 16px 0;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .tab {
+    flex: 1;
+    padding: 7px 4px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: transparent;
+    color: rgba(255,255,255,0.5);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .tab.active { background: var(--gold); color: var(--navy); border-color: var(--gold); font-weight: 700; }
+  .tab:hover:not(.active) { border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.8); }
+
+  /* Itinerary toggle */
+  #itinerary-bar {
+    padding: 8px 16px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  #itinerary-toggle {
+    flex: 1;
+    padding: 7px 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(201,168,76,0.25);
+    background: transparent;
+    color: var(--gold-light);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.04em;
+  }
+  #itinerary-toggle.active { background: var(--gold); color: var(--navy); border-color: var(--gold); font-weight: 700; }
+  #itinerary-toggle:hover:not(.active) { border-color: rgba(201,168,76,0.5); }
+
+  #clear-itinerary {
+    padding: 7px 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(212,83,75,0.3);
+    background: transparent;
+    color: #f0918b;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: none;
+  }
+  #clear-itinerary:hover { background: rgba(212,83,75,0.15); }
+
+  #itinerary-summary {
+    padding: 0 16px;
+    flex-shrink: 0;
+    display: none;
+  }
+
+  #itinerary-summary .summary-inner {
+    background: rgba(201,168,76,0.1);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+
+  #itinerary-summary .summary-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+
+  #itinerary-summary .summary-text {
+    font-size: 12px;
+    color: rgba(255,255,255,0.75);
+    line-height: 1.5;
+  }
+
+  /* List */
+  #place-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0 16px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #place-list::-webkit-scrollbar { width: 4px; }
+  #place-list::-webkit-scrollbar-track { background: transparent; }
+  #place-list::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.3); border-radius: 2px; }
+
+  .place-item {
+    padding: 11px 20px;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: all 0.18s;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    position: relative;
+  }
+
+  .place-item:hover { background: rgba(255,255,255,0.05); }
+  .place-item.active { background: rgba(201,168,76,0.1); border-left-color: var(--gold); }
+  .place-item.in-itinerary { border-left-color: var(--green); }
+  .place-item.in-itinerary .itin-badge { display: flex; }
+
+  /* Visited state */
+  .place-item.visited { opacity: 0.45; }
+  .place-item.visited .place-name { text-decoration: line-through; text-decoration-color: rgba(255,255,255,0.3); }
+  .place-item.visited .visited-badge { display: flex; }
+  .place-item.visited:hover { opacity: 0.6; }
+
+  .visited-badge {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.5);
+    font-size: 12px;
+    font-weight: 700;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .itin-badge {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--green);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .place-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .place-icon.restaurant { background: rgba(201,168,76,0.2); }
+  .place-icon.sight { background: rgba(46,110,166,0.25); }
+  .place-icon.hotel { background: rgba(212,83,75,0.25); }
+
+  .place-info { flex: 1; min-width: 0; padding-right: 24px; }
+
+  .place-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: #fff;
+    line-height: 1.3;
+    margin-bottom: 3px;
+  }
+
+  .place-meta {
+    font-size: 11px;
+    color: rgba(255,255,255,0.45);
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .price-tag {
+    background: rgba(201,168,76,0.15);
+    color: var(--gold-light);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .walk-tag {
+    background: rgba(212,83,75,0.2);
+    color: #f0918b;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  /* ── Map ── */
+  #map {
+    flex: 1;
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  /* Hotel pulse */
+  @keyframes pulse-ring {
+    0% { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(2.5); opacity: 0; }
+  }
+
+  .hotel-pulse {
+    position: absolute;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(212,83,75,0.3);
+    animation: pulse-ring 2s ease-out infinite;
+    pointer-events: none;
+    z-index: -1;
+    top: 0; left: 0;
+  }
+
+  /* Popup */
+  .leaflet-popup-content-wrapper {
+    border-radius: 12px !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.22) !important;
+    border: none !important;
+    padding: 0 !important;
+    overflow: hidden;
+  }
+
+  .leaflet-popup-content {
+    margin: 0 !important;
+    width: 280px !important;
+  }
+
+  .leaflet-popup-tip-container { display: none; }
+
+  .popup-inner {
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .popup-header-img {
+    width: 100%;
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    position: relative;
+  }
+
+  .popup-header-img .overlay-text {
+    position: absolute;
+    bottom: 8px;
+    left: 12px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.9);
+    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  }
+
+  .popup-body {
+    padding: 14px 16px 16px;
+  }
+
+  .popup-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
+
+  .popup-cuisine {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .popup-prices {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .popup-price-chip {
+    flex: 1;
+    text-align: center;
+    background: var(--cream);
+    border-radius: 6px;
+    padding: 6px 4px;
+  }
+
+  .popup-price-chip .currency {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 2px;
+  }
+
+  .popup-price-chip .amount {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--navy);
+  }
+
+  .popup-note {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.5;
+    border-top: 1px solid #f0ebe2;
+    padding-top: 10px;
+    margin-bottom: 10px;
+  }
+
+  .popup-actions {
+    display: flex;
+    gap: 6px;
+  }
+
+  .popup-action-btn {
+    flex: 1;
+    padding: 7px 8px;
+    border-radius: 6px;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: all 0.15s;
+  }
+
+  .btn-directions {
+    background: var(--navy);
+    color: #fff;
+  }
+  .btn-directions:hover { background: var(--navy-deep); }
+
+  .btn-itinerary {
+    background: rgba(42,138,74,0.1);
+    color: var(--green);
+    border: 1px solid rgba(42,138,74,0.2);
+  }
+  .btn-itinerary:hover { background: rgba(42,138,74,0.2); }
+
+  .btn-visited {
+    background: rgba(255,255,255,0.06);
+    color: var(--muted);
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+  .btn-visited:hover { background: rgba(255,255,255,0.12); }
+  .btn-visited.is-visited {
+    background: rgba(42,138,74,0.1);
+    color: var(--green);
+    border-color: rgba(42,138,74,0.2);
+  }
+
+  /* Legend */
+  #legend {
+    position: absolute;
+    bottom: 28px;
+    right: 16px;
+    background: rgba(26,58,92,0.92);
+    backdrop-filter: blur(8px);
+    border-radius: 10px;
+    padding: 12px 16px;
+    z-index: 1000;
+    border: 1px solid rgba(201,168,76,0.2);
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    color: rgba(255,255,255,0.85);
+    margin-bottom: 6px;
+  }
+  .legend-item:last-child { margin-bottom: 0; }
+
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* Top controls */
+  .map-controls {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 1000;
+    display: flex;
+    gap: 8px;
+  }
+
+  .map-ctrl-btn {
+    background: var(--navy);
+    color: var(--gold);
+    border: 1px solid rgba(201,168,76,0.4);
+    border-radius: 8px;
+    padding: 9px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    white-space: nowrap;
+  }
+  .map-ctrl-btn:hover { background: var(--gold); color: var(--navy); }
+  .map-ctrl-btn.active { background: var(--gold); color: var(--navy); }
+
+  .leaflet-control-zoom { border: none !important; box-shadow: 0 2px 12px rgba(0,0,0,0.15) !important; }
+  .leaflet-control-zoom a { background: var(--navy) !important; color: var(--gold) !important; border: none !important; }
+  .leaflet-control-zoom a:hover { background: #0f2540 !important; }
+
+  /* Marker cluster overrides */
+  .marker-cluster-small, .marker-cluster-medium, .marker-cluster-large {
+    background: rgba(26,58,92,0.6) !important;
+  }
+  .marker-cluster-small div, .marker-cluster-medium div, .marker-cluster-large div {
+    background: var(--navy) !important;
+    color: var(--gold) !important;
+    font-family: 'DM Sans', sans-serif !important;
+    font-weight: 700 !important;
+  }
+
+  /* Route line */
+  .route-info-box {
+    position: absolute;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    background: rgba(26,58,92,0.95);
+    backdrop-filter: blur(8px);
+    border-radius: 10px;
+    padding: 12px 20px;
+    border: 1px solid rgba(201,168,76,0.3);
+    font-family: 'DM Sans', sans-serif;
+    color: #fff;
+    font-size: 13px;
+    display: none;
+    gap: 16px;
+    align-items: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+
+  .route-info-box .route-stat {
+    text-align: center;
+  }
+
+  .route-info-box .route-stat .val {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--gold-light);
+  }
+
+  .route-info-box .route-stat .lbl {
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    margin-top: 2px;
+  }
+
+  .route-close {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.5);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0 4px;
+    transition: color 0.15s;
+  }
+  .route-close:hover { color: #fff; }
+
+  /* ── Responsive: Tablets ── */
+  @media (max-width: 1024px) {
+    :root { --sidebar-w: 320px; }
+    #sidebar-header h1 { font-size: 22px; }
+  }
+
+  /* ── Responsive: Phones ── */
+  @media (max-width: 768px) {
+    :root { --sidebar-w: 100vw; }
+
+    body {
+      flex-direction: column;
+      height: 100vh;
+      height: 100dvh;
+      position: relative;
+    }
+
+    /* Map: absolute fill behind everything */
+    #sidebar ~ div {
+      position: absolute !important;
+      top: 0; left: 0; right: 0; bottom: 0;
+      flex: none !important;
+    }
+
+    #map {
+      position: absolute !important;
+      top: 0; left: 0;
+      width: 100% !important;
+      height: 100% !important;
+      height: 100dvh !important;
+    }
+
+    /* Sidebar: fixed bottom sheet */
+    #sidebar {
+      position: fixed;
+      z-index: 1000;
+      width: 100vw;
+      min-width: 100vw;
+      height: 55vh;
+      height: 55dvh;
+      max-height: 55vh;
+      max-height: 55dvh;
+      bottom: 0;
+      left: 0;
+      top: auto;
+      border-radius: 18px 18px 0 0;
+      box-shadow: 0 -4px 24px rgba(0,0,0,0.35);
+      transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+      /* Reset desktop collapse styles */
+      margin-left: 0 !important;
+      opacity: 1 !important;
+    }
+
+    #sidebar.collapsed {
+      transform: translateY(calc(100% - 52px));
+      pointer-events: auto;
+    }
+
+    /* Peek bar visible when collapsed */
+    #sidebar.collapsed .mobile-handle { pointer-events: auto; }
+    #sidebar.collapsed #sidebar-header,
+    #sidebar.collapsed #search-sort,
+    #sidebar.collapsed #filter-tabs,
+    #sidebar.collapsed #itinerary-bar,
+    #sidebar.collapsed #itinerary-summary,
+    #sidebar.collapsed #place-list {
+      pointer-events: none;
+      visibility: hidden;
+    }
+
+    /* Un-hide when expanded */
+    #sidebar #sidebar-header,
+    #sidebar #search-sort,
+    #sidebar #filter-tabs,
+    #sidebar #itinerary-bar,
+    #sidebar #itinerary-summary,
+    #sidebar #place-list {
+      visibility: visible;
+    }
+
+    .mobile-handle {
+      display: flex !important;
+      justify-content: center;
+      padding: 12px 0 8px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: pan-y;
+    }
+
+    .mobile-handle-bar {
+      width: 44px;
+      height: 5px;
+      background: rgba(255,255,255,0.35);
+      border-radius: 3px;
+    }
+
+    #sidebar-toggle { display: none !important; }
+
+    #sidebar-header {
+      padding: 12px 16px 12px;
+      flex-shrink: 0;
+    }
+
+    #sidebar-header .eyebrow { font-size: 9px; margin-bottom: 4px; }
+    #sidebar-header h1 { font-size: 20px; }
+    .rate-bar { margin-top: 8px; }
+    .rate-chip { font-size: 9px; padding: 2px 6px; }
+
+    #search-sort { padding: 8px 12px 0; flex-shrink: 0; }
+    #search-box { padding: 8px 10px 8px 30px; font-size: 16px; /* 16px prevents iOS zoom on focus */ }
+    .search-wrap::before { left: 8px; font-size: 12px; }
+    #sort-row { gap: 4px; margin-top: 6px; }
+    .sort-btn { padding: 6px 4px; font-size: 10px; -webkit-tap-highlight-color: transparent; }
+
+    #filter-tabs { padding: 8px 12px 0; gap: 4px; flex-shrink: 0; }
+    .tab { padding: 8px 4px; font-size: 11px; -webkit-tap-highlight-color: transparent; }
+
+    #itinerary-bar { padding: 6px 12px; flex-shrink: 0; }
+    #itinerary-toggle { font-size: 11px; padding: 8px 10px; }
+    #clear-itinerary { padding: 8px 10px; font-size: 11px; }
+
+    #itinerary-summary { padding: 0 12px; flex-shrink: 0; }
+
+    #place-list {
+      padding: 6px 0 80px;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain; /* prevent pull-to-refresh interference */
+    }
+    .place-item { padding: 12px 14px; gap: 10px; -webkit-tap-highlight-color: transparent; }
+    .place-name { font-size: 14px; }
+    .place-meta { font-size: 11px; }
+
+    /* Map controls */
+    .map-controls {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      z-index: 999;
+      gap: 6px;
+    }
+    .map-ctrl-btn {
+      padding: 8px 10px;
+      font-size: 11px;
+      border-radius: 10px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Legend: top-left, compact */
+    #legend {
+      position: fixed !important;
+      bottom: auto !important;
+      top: 12px;
+      left: 12px;
+      right: auto;
+      z-index: 999;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 11px;
+    }
+    .legend-item { font-size: 10px; gap: 6px; margin-bottom: 4px; }
+    .legend-dot { width: 10px; height: 10px; }
+
+    /* Route info bar */
+    .route-info-box {
+      position: fixed !important;
+      bottom: auto !important;
+      top: 52px;
+      left: 12px;
+      right: 12px;
+      transform: none;
+      width: auto;
+      padding: 10px 14px;
+      border-radius: 10px;
+      gap: 12px;
+      z-index: 999;
+    }
+    .route-info-box .route-stat .val { font-size: 14px; }
+    .route-info-box .route-stat .lbl { font-size: 8px; }
+
+    /* Popups — wider on mobile, touch-friendly */
+    .leaflet-popup-content {
+      width: 75vw !important;
+      max-width: 300px !important;
+      min-width: 220px !important;
+    }
+
+    .popup-header-img { height: 70px; }
+    .popup-body { padding: 12px 14px 14px; }
+    .popup-name { font-size: 16px; }
+    .popup-cuisine { font-size: 12px; }
+
+    .popup-actions {
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .popup-action-btn {
+      padding: 10px 8px;
+      font-size: 11px;
+      border-radius: 8px;
+      min-height: 44px; /* Apple HIG touch target */
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Zoom controls */
+    .leaflet-control-zoom {
+      position: fixed !important;
+      margin-right: 12px !important;
+      margin-bottom: 12px !important;
+      z-index: 998;
+    }
+    .leaflet-control-zoom a {
+      width: 40px !important;
+      height: 40px !important;
+      line-height: 40px !important;
+      font-size: 20px !important;
+    }
+  }
+
+  /* ── Extra small phones (iPhone SE, etc.) ── */
+  @media (max-width: 375px) {
+    #sidebar { height: 50vh; height: 50dvh; max-height: 50vh; max-height: 50dvh; }
+    #sidebar-header h1 { font-size: 18px; }
+    .map-ctrl-btn { padding: 6px 8px; font-size: 10px; }
+    #legend { display: none; }
+    .popup-action-btn { font-size: 10px; padding: 8px 6px; }
+  }
+
+  /* iOS safe area padding */
+  @supports (padding-bottom: env(safe-area-inset-bottom)) {
+    @media (max-width: 768px) {
+      #place-list { padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+      #sidebar { padding-bottom: env(safe-area-inset-bottom); }
+    }
+  }
+
+  .mobile-handle { display: none; }
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <div class="mobile-handle" onclick="toggleSidebar()">
+    <div class="mobile-handle-bar"></div>
+  </div>
+  <div id="sidebar-header">
+    <div class="eyebrow">Travel Guide · March 2026</div>
+    <h1>Kyiv<br><em>Dining & Sights</em></h1>
+    <div class="rate-bar">
+      <span class="rate-chip">£1 = 59 UAH</span>
+      <span class="rate-chip">€1 = 41 UAH</span>
+    </div>
+  </div>
+  <div id="search-sort">
+    <div class="search-wrap">
+      <input type="text" id="search-box" placeholder="Search places..." oninput="applyFilters()">
+    </div>
+    <div id="sort-row">
+      <button class="sort-btn active" onclick="setSort('default', this)">Default</button>
+      <button class="sort-btn" onclick="setSort('distance', this)">Distance ↑</button>
+      <button class="sort-btn" onclick="setSort('price-low', this)">Price ↑</button>
+      <button class="sort-btn" onclick="setSort('name', this)">A → Z</button>
+    </div>
+  </div>
+  <div id="filter-tabs">
+    <button class="tab active" onclick="setFilter('all', this)">All</button>
+    <button class="tab" onclick="setFilter('restaurant', this)">🍽 Dining</button>
+    <button class="tab" onclick="setFilter('sight', this)">🏛 Sights</button>
+  </div>
+  <div id="itinerary-bar">
+    <button id="itinerary-toggle" onclick="toggleItineraryMode()">📋 Itinerary Mode</button>
+    <button id="clear-itinerary" onclick="clearItinerary()">✕ Clear</button>
+  </div>
+  <div id="itinerary-summary"><div class="summary-inner"><div class="summary-label">Your Route</div><div class="summary-text" id="itinerary-text"></div></div></div>
+  <div id="place-list"></div>
+</div>
+
+<div style="position:relative; flex:1;">
+  <div id="map"></div>
+  <button id="sidebar-toggle" onclick="toggleSidebar()">
+    <span id="toggle-icon">☰</span>
+    <span class="label" id="toggle-label">Menu</span>
+  </button>
+  <div class="map-controls">
+    <button class="map-ctrl-btn" id="style-btn" onclick="cycleMapStyle()">🗺 Light</button>
+    <button class="map-ctrl-btn" onclick="fitAllMarkers()">⊡ Fit All</button>
+  </div>
+  <div class="route-info-box" id="route-info">
+    <div class="route-stat"><div class="val" id="route-distance">—</div><div class="lbl">Distance</div></div>
+    <div class="route-stat"><div class="val" id="route-time">—</div><div class="lbl">Walking</div></div>
+    <div class="route-stat"><div class="val" id="route-stops">—</div><div class="lbl">Stops</div></div>
+    <button class="route-close" onclick="clearRouteDisplay()">✕</button>
+  </div>
+  <div id="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#D4534B"></div>Your Hotel</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#C9A84C"></div>Restaurant</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#2E6EA6"></div>Sight / Attraction</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#2a8a4a"></div>Itinerary Route</div>
+  </div>
+</div>
+
+<script>
+const places = [
+  { id:0,  type:'hotel',      emoji:'🏨', name:'Your Hotel',                            cuisine:'Sofiivska St 19',           uah:'—',         eur:'—',        gbp:'—',        note:'Your base in the heart of Kyiv, steps from St. Sophia\'s Cathedral and Mykhailivska Square.', lat:50.4533, lng:30.5143, walk:null, walkKm:0, headerGrad:'linear-gradient(135deg,#D4534B,#e8857f)', hours:null },
+  { id:1,  type:'restaurant', emoji:'🍽', name:'KANAPA',                                cuisine:'Modern Ukrainian',         uah:'500–900',   eur:'€12–22',   gbp:'£8.50–15', note:'Borscht with pampushki, varenyky, Chicken Kyiv. Terrace with city views on Andriyivskyy Descent.', lat:50.4598574, lng:30.5165903, walk:'12 min · 1.0 km', walkKm:1.0, headerGrad:'linear-gradient(135deg,#C9A84C,#e0c46e)', hours:'11:00–23:00' },
+  { id:2,  type:'restaurant', emoji:'🍽', name:'Ulyublenyi Dyadya',                     cuisine:'Oriental-Ukrainian Fusion', uah:'600–1,000', eur:'€15–24',   gbp:'£10–17',   note:'Award-winning. Borscht with prunes rated best in city. Warm upscale atmosphere — book ahead.', lat:50.438297, lng:30.501079, walk:'31 min · 2.5 km', walkKm:2.5, headerGrad:'linear-gradient(135deg,#8B6914,#C9A84C)', hours:'12:00–23:00' },
+  { id:3,  type:'restaurant', emoji:'🍽', name:'Ostannya Barykada',                     cuisine:'Traditional Ukrainian',     uah:'400–750',   eur:'€10–18',   gbp:'£7–13',    note:'Hidden underground at Maidan. Secret menu unlocked by Ukrainian history quiz. Password required.', lat:50.4512159, lng:30.5221697, walk:'10 min · 0.8 km', walkKm:0.8, headerGrad:'linear-gradient(135deg,#6b5a1f,#a89033)', hours:'11:00–00:00' },
+  { id:4,  type:'restaurant', emoji:'🍽', name:'BEEF Meat & Wine',                      cuisine:'Steakhouse',                uah:'800–1,500', eur:'€20–37',   gbp:'£14–25',   note:'Industrial-chic. Open kitchen cooking over natural coals. Dry-aged steak, carpaccio, roast beef.', lat:50.439046, lng:30.520744, walk:'27 min · 2.1 km', walkKm:2.1, headerGrad:'linear-gradient(135deg,#5a3e1b,#8B6914)', hours:'12:00–00:00' },
+  { id:5,  type:'restaurant', emoji:'🍽', name:'Catch Seafood',                         cuisine:'Seafood',                   uah:'900–1,800', eur:'€22–44',   gbp:'£15–30',   note:'Ranked #1 seafood in Ukraine. Live king crab tank. City views. Menu changes with daily catch.', lat:50.4558549, lng:30.517039, walk:'6 min · 0.4 km', walkKm:0.4, headerGrad:'linear-gradient(135deg,#2E6EA6,#5a9fd4)', hours:'12:00–23:00' },
+  { id:6,  type:'restaurant', emoji:'🍽', name:'Pizzeria Napule',                       cuisine:'Neapolitan Pizza',          uah:'300–550',   eur:'€7–13',    gbp:'£5–9',     note:'AVPN certified. Wood-fired oven, materials sourced from Naples. 20 varieties. Pioneer of real Neapolitan pizza in Kyiv.', lat:50.437864, lng:30.533683, walk:'36 min · 2.9 km', walkKm:2.9, headerGrad:'linear-gradient(135deg,#b8432c,#e07a5a)', hours:'11:00–22:00' },
+  { id:7,  type:'restaurant', emoji:'🍽', name:'Urban Space 500',                       cuisine:'Contemporary Ukrainian',    uah:'500–900',   eur:'€12–22',   gbp:'£8.50–15', note:'Social enterprise — 80% of profits go to city development projects. Innovative seasonal menu.', lat:50.4490951, lng:30.5204184, walk:'10 min · 0.8 km', walkKm:0.8, headerGrad:'linear-gradient(135deg,#3a7a3a,#6ab06a)', hours:'09:00–23:00' },
+  { id:8,  type:'restaurant', emoji:'🍽', name:'Vino e Cucina',                         cuisine:'Italian Enoteca',           uah:'700–1,300', eur:'€17–32',   gbp:'£12–22',   note:'Enoteca concept with exceptional wine list. Risotto in cheese wheel. For gourmets and hedonists.', lat:50.458232, lng:30.487416, walk:'32 min · 2.6 km', walkKm:2.6, headerGrad:'linear-gradient(135deg,#6B1A5C,#a84c96)', hours:'12:00–00:00' },
+  { id:9,  type:'restaurant', emoji:'🍽', name:'Puzata Hata',                           cuisine:'Ukrainian Canteen',         uah:'80–200',    eur:'€2–5',     gbp:'£1.35–3.40', note:'Self-service chain where locals eat daily. No frills. Borscht, varenyky, holubtsi — whatever is hot.', lat:50.4476187, lng:30.5239113, walk:'15 min · 1.2 km', walkKm:1.2, headerGrad:'linear-gradient(135deg,#C9A84C,#f0d87a)', hours:'08:00–22:00' },
+  { id:10, type:'sight',      emoji:'🏛', name:'Kyiv Pechersk Lavra',                   cuisine:'UNESCO Monastery',          uah:'80–250',    eur:'€2–6',     gbp:'£1.35–4.25', note:'Top sight in Kyiv. Underground tunnels with mummified monks — explore by candlelight. UNESCO World Heritage.', lat:50.4349385, lng:30.5573187, walk:'60 min · 4.8 km', walkKm:4.8, headerGrad:'linear-gradient(135deg,#1A3A5C,#2E6EA6)', hours:'09:00–17:00' },
+  { id:11, type:'sight',      emoji:'🏛', name:"St. Sophia's Cathedral",                cuisine:'UNESCO Cathedral',          uah:'160–220',   eur:'€4–5.40',  gbp:'£2.70–3.75', note:'Original 11th-century mosaics and frescoes. Climb the bell tower for panoramic views over old Kyiv.', lat:50.4529022, lng:30.5142035, walk:'1 min · next door', walkKm:0.05, headerGrad:'linear-gradient(135deg,#2E6EA6,#6BAED6)', hours:'10:00–18:00' },
+  { id:12, type:'sight',      emoji:'🏛', name:"St. Michael's Golden-Domed Monastery",  cuisine:'Monastery',                 uah:'Free',      eur:'Free',     gbp:'Free',     note:'Striking blue and gold exterior. Rebuilt after the Soviets demolished the original in 1937.', lat:50.4558456, lng:30.5230134, walk:'11 min · 0.9 km', walkKm:0.9, headerGrad:'linear-gradient(135deg,#1565C0,#42A5F5)', hours:'07:00–19:00' },
+  { id:13, type:'sight',      emoji:'🏛', name:'Andriyivskyy Descent',                  cuisine:'Historic Street',           uah:'Free',      eur:'Free',     gbp:'Free',     note:"Artists, galleries, Bulgakov's house. Views from Zamkova Hora. Called the Montmartre of Kyiv.", lat:50.4598069, lng:30.5161398, walk:'12 min · 1.0 km', walkKm:1.0, headerGrad:'linear-gradient(135deg,#4A148C,#9C27B0)', hours:'All day' },
+  { id:14, type:'sight',      emoji:'🏛', name:'Motherland Monument',                   cuisine:'Monument / War Museum',     uah:'~100',      eur:'~€2.50',   gbp:'~£1.70',   note:'102m titanium statue. Viewing platform inside the head. Park full of tanks, planes, WW2 monuments.', lat:50.4265249, lng:30.5630521, walk:'74 min · 5.9 km', walkKm:5.9, headerGrad:'linear-gradient(135deg,#455A64,#78909C)', hours:'10:00–18:00' },
+  { id:15, type:'sight',      emoji:'🏛', name:'PinchukArtCentre',                      cuisine:'Contemporary Art',          uah:'Free',      eur:'Free',     gbp:'Free',     note:'Best contemporary art gallery in the city. Rotating exhibitions. Rooftop café on the 6th floor.', lat:50.4418397, lng:30.5213207, walk:'22 min · 1.8 km', walkKm:1.8, headerGrad:'linear-gradient(135deg,#E91E63,#F48FB1)', hours:'12:00–21:00 (Tue–Sun)' },
+  { id:16, type:'sight',      emoji:'🏛', name:'Independence Square (Maidan)',           cuisine:'Historic Square',           uah:'Free',      eur:'Free',     gbp:'Free',     note:'Central hub of Kyiv. Site of the 2014 revolution. Symbolic to all Ukrainians.', lat:50.4505318, lng:30.5229899, walk:'11 min · 0.9 km', walkKm:0.9, headerGrad:'linear-gradient(135deg,#F57F17,#FFD54F)', hours:'All day' }
+];
+
+// State
+const markers = {};
+let activeItem = null;
+let map, clusterGroup;
+let currentFilter = 'all';
+let currentSort = 'default';
+let sidebarOpen = true;
+let itineraryMode = false;
+let itinerary = []; // ordered list of place ids
+let visited = new Set(); // ids of visited places
+let routeLines = [];
+let currentMapStyle = 0;
+
+const tileLayers = [
+  { name:'Light',     url:'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png' },
+  { name:'Dark',      url:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' },
+  { name:'Streets',   url:'https://tile.openstreetmap.org/{z}/{x}/{y}.png' },
+  { name:'Satellite', url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}' }
+];
+
+let activeTileLayer;
+
+function toggleSidebar() {
+  sidebarOpen = !sidebarOpen;
+  document.getElementById('sidebar').classList.toggle('collapsed', !sidebarOpen);
+  const toggleIcon = document.getElementById('toggle-icon');
+  const toggleLabel = document.getElementById('toggle-label');
+  if (toggleIcon) toggleIcon.textContent = sidebarOpen ? '✕' : '☰';
+  if (toggleLabel) toggleLabel.textContent = sidebarOpen ? 'Close' : 'Menu';
+  if (map) {
+    setTimeout(() => map.invalidateSize(), 100);
+    setTimeout(() => map.invalidateSize(), 400);
+  }
+}
+
+function cycleMapStyle() {
+  if (!map) return;
+  currentMapStyle = (currentMapStyle + 1) % tileLayers.length;
+  const tl = tileLayers[currentMapStyle];
+  if (activeTileLayer) map.removeLayer(activeTileLayer);
+  activeTileLayer = L.tileLayer(tl.url, { attribution:'© OpenStreetMap', maxZoom:19 }).addTo(map);
+  document.getElementById('style-btn').textContent = '🗺 ' + tl.name;
+}
+
+function fitAllMarkers() {
+  if (!map) return;
+  const visible = places.filter(p => currentFilter === 'all' || p.type === currentFilter || p.type === 'hotel');
+  if (visible.length === 0) return;
+  const bounds = L.latLngBounds(visible.map(p => [p.lat, p.lng]));
+  map.fitBounds(bounds, { padding: [40, 40] });
+}
+
+function selectPlace(id) {
+  if (itineraryMode) {
+    toggleItineraryStop(id);
+    return;
+  }
+  if (activeItem !== null) {
+    const prev = document.getElementById('item-' + activeItem);
+    if (prev) prev.classList.remove('active');
+  }
+  activeItem = id;
+  const el = document.getElementById('item-' + id);
+  if (el) { el.classList.add('active'); el.scrollIntoView({ behavior:'smooth', block:'nearest' }); }
+  const p = places.find(x => x.id === id);
+  if (p && map) {
+    // On mobile, collapse sidebar first so the map is visible
+    if (window.innerWidth <= 768 && sidebarOpen) {
+      toggleSidebar();
+      setTimeout(() => {
+        map.setView([p.lat, p.lng], 16, { animate:true });
+        markers[id].openPopup();
+        if (p.type !== 'hotel') drawRouteTo(p);
+      }, 400);
+    } else {
+      map.setView([p.lat, p.lng], 16, { animate:true });
+      markers[id].openPopup();
+      if (p.type !== 'hotel') drawRouteTo(p);
+    }
+  }
+}
+
+// Decode Google-style encoded polyline (used by Valhalla)
+function decodePolyline(encoded, precision) {
+  const factor = Math.pow(10, precision || 6);
+  let index = 0, lat = 0, lng = 0;
+  const coords = [];
+  while (index < encoded.length) {
+    let b, shift = 0, result = 0;
+    do { b = encoded.charCodeAt(index++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
+    lat += (result & 1) ? ~(result >> 1) : (result >> 1);
+    shift = 0; result = 0;
+    do { b = encoded.charCodeAt(index++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
+    lng += (result & 1) ? ~(result >> 1) : (result >> 1);
+    coords.push([lat / factor, lng / factor]);
+  }
+  return coords;
+}
+
+async function fetchWalkingRoute(from, to) {
+  // Primary: Valhalla pedestrian routing (proper sidewalks, paths, stairs)
+  const valhallaJson = JSON.stringify({
+    locations: [{ lat: from.lat, lon: from.lng }, { lat: to.lat, lon: to.lng }],
+    costing: 'pedestrian',
+    units: 'kilometers',
+    directions_options: { units: 'kilometers' }
+  });
+  try {
+    const resp = await fetch('https://valhalla1.openstreetmap.de/route?json=' + encodeURIComponent(valhallaJson));
+    const data = await resp.json();
+    if (data.trip && data.trip.legs && data.trip.legs.length > 0) {
+      const shape = data.trip.legs[0].shape;
+      const coords = decodePolyline(shape, 6);
+      return {
+        coords,
+        distanceKm: data.trip.summary.length,
+        durationMin: Math.round(data.trip.summary.time / 60)
+      };
+    }
+  } catch (e) { console.warn('Valhalla fetch failed, trying OSRM fallback', e); }
+
+  // Fallback: OSRM
+  try {
+    const url = 'https://router.project-osrm.org/route/v1/foot/' +
+      from.lng + ',' + from.lat + ';' + to.lng + ',' + to.lat +
+      '?overview=full&geometries=geojson';
+    const resp = await fetch(url);
+    const data = await resp.json();
+    if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+      const route = data.routes[0];
+      const coords = route.geometry.coordinates.map(c => [c[1], c[0]]);
+      return { coords, distanceKm: route.distance / 1000, durationMin: Math.round(route.duration / 60) };
+    }
+  } catch (e) { console.warn('OSRM also failed, falling back to straight line', e); }
+
+  // Last resort: straight line
+  const km = haversine(from.lat, from.lng, to.lat, to.lng);
+  return { coords: [[from.lat, from.lng], [to.lat, to.lng]], distanceKm: km, durationMin: Math.round(km / 0.08) };
+}
+
+async function fetchMultiStopRoute(stops) {
+  // Primary: Valhalla multi-stop pedestrian route
+  const valhallaJson = JSON.stringify({
+    locations: stops.map(s => ({ lat: s.lat, lon: s.lng })),
+    costing: 'pedestrian',
+    units: 'kilometers',
+    directions_options: { units: 'kilometers' }
+  });
+  try {
+    const resp = await fetch('https://valhalla1.openstreetmap.de/route?json=' + encodeURIComponent(valhallaJson));
+    const data = await resp.json();
+    if (data.trip && data.trip.legs) {
+      // Combine all leg shapes into one coordinate array
+      let allCoords = [];
+      data.trip.legs.forEach(leg => {
+        const legCoords = decodePolyline(leg.shape, 6);
+        if (allCoords.length > 0) legCoords.shift(); // avoid duplicate junction point
+        allCoords = allCoords.concat(legCoords);
+      });
+      return {
+        coords: allCoords,
+        distanceKm: data.trip.summary.length,
+        durationMin: Math.round(data.trip.summary.time / 60),
+        legs: data.trip.legs
+      };
+    }
+  } catch (e) { console.warn('Valhalla multi-stop failed, trying OSRM', e); }
+
+  // Fallback: OSRM
+  try {
+    const coordStr = stops.map(s => s.lng + ',' + s.lat).join(';');
+    const url = 'https://router.project-osrm.org/route/v1/foot/' + coordStr +
+      '?overview=full&geometries=geojson&steps=false';
+    const resp = await fetch(url);
+    const data = await resp.json();
+    if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+      const route = data.routes[0];
+      const coords = route.geometry.coordinates.map(c => [c[1], c[0]]);
+      return { coords, distanceKm: route.distance / 1000, durationMin: Math.round(route.duration / 60) };
+    }
+  } catch (e) { console.warn('OSRM multi-stop also failed', e); }
+
+  return null;
+}
+
+async function drawRouteTo(place) {
+  if (!map) return;
+  clearRouteLines();
+  const hotel = places[0];
+  const info = document.getElementById('route-info');
+
+  // Show loading state
+  document.getElementById('route-distance').textContent = '...';
+  document.getElementById('route-time').textContent = '...';
+  document.getElementById('route-stops').textContent = '1 stop';
+  info.style.display = 'flex';
+
+  const result = await fetchWalkingRoute(hotel, place);
+  const line = L.polyline(result.coords, {
+    color: '#2a8a4a', weight: 4, opacity: 0.85,
+    lineCap: 'round', lineJoin: 'round'
+  }).addTo(map);
+  routeLines.push(line);
+
+  // Animated dash effect overlay
+  const dashLine = L.polyline(result.coords, {
+    color: '#fff', weight: 2, opacity: 0.4,
+    dashArray: '6,12', lineCap: 'round'
+  }).addTo(map);
+  routeLines.push(dashLine);
+
+  document.getElementById('route-distance').textContent = result.distanceKm.toFixed(1) + ' km';
+  document.getElementById('route-time').textContent = result.durationMin + ' min';
+}
+
+function clearRouteLines() {
+  if (map) routeLines.forEach(l => map.removeLayer(l));
+  routeLines = [];
+}
+
+function clearRouteDisplay() {
+  clearRouteLines();
+  document.getElementById('route-info').style.display = 'none';
+}
+
+function toggleItineraryMode() {
+  itineraryMode = !itineraryMode;
+  document.getElementById('itinerary-toggle').classList.toggle('active', itineraryMode);
+  if (!itineraryMode) {
+    drawItineraryRoute();
+  }
+  renderList();
+}
+
+function toggleItineraryStop(id) {
+  if (id === 0) return; // can't add hotel
+  const idx = itinerary.indexOf(id);
+  if (idx >= 0) {
+    itinerary.splice(idx, 1);
+  } else {
+    itinerary.push(id);
+  }
+  updateItinerarySummary();
+  renderList();
+}
+
+function clearItinerary() {
+  itinerary = [];
+  clearRouteDisplay();
+  updateItinerarySummary();
+  renderList();
+}
+
+async function updateItinerarySummary() {
+  const sumEl = document.getElementById('itinerary-summary');
+  const clearEl = document.getElementById('clear-itinerary');
+  if (itinerary.length === 0) {
+    sumEl.style.display = 'none';
+    clearEl.style.display = 'none';
+    return;
+  }
+  clearEl.style.display = 'block';
+  sumEl.style.display = 'block';
+  const names = itinerary.map((id, i) => (i + 1) + '. ' + places.find(p => p.id === id).name);
+
+  // Quick haversine estimate first
+  let totalKm = 0;
+  const fullRoute = [0, ...itinerary];
+  for (let i = 1; i < fullRoute.length; i++) {
+    const a = places.find(p => p.id === fullRoute[i-1]);
+    const b = places.find(p => p.id === fullRoute[i]);
+    totalKm += haversine(a.lat, a.lng, b.lat, b.lng);
+  }
+  const totalMin = Math.round(totalKm / 0.08);
+  document.getElementById('itinerary-text').innerHTML = names.join('<br>') +
+    '<br><span style="color:var(--gold-light);font-weight:600;margin-top:4px;display:inline-block;">≈ ' +
+    totalKm.toFixed(1) + ' km · ~' + totalMin + ' min walking</span>';
+}
+
+async function drawItineraryRoute() {
+  if (!map) return;
+  clearRouteLines();
+  if (itinerary.length === 0) {
+    document.getElementById('route-info').style.display = 'none';
+    return;
+  }
+
+  const fullRouteIds = [0, ...itinerary];
+  const stops = fullRouteIds.map(id => places.find(p => p.id === id));
+  const info = document.getElementById('route-info');
+
+  // Show loading
+  document.getElementById('route-distance').textContent = '...';
+  document.getElementById('route-time').textContent = '...';
+  document.getElementById('route-stops').textContent = itinerary.length + ' stop' + (itinerary.length > 1 ? 's' : '');
+  info.style.display = 'flex';
+
+  // Try multi-stop OSRM route
+  const multiResult = await fetchMultiStopRoute(stops);
+  let totalKm, totalMin;
+
+  if (multiResult) {
+    totalKm = multiResult.distanceKm;
+    totalMin = multiResult.durationMin;
+
+    // Draw the full route line
+    const line = L.polyline(multiResult.coords, {
+      color: '#2a8a4a', weight: 4.5, opacity: 0.85,
+      lineCap: 'round', lineJoin: 'round'
+    }).addTo(map);
+    routeLines.push(line);
+
+    // White dash overlay
+    const dashLine = L.polyline(multiResult.coords, {
+      color: '#fff', weight: 2, opacity: 0.35,
+      dashArray: '6,14', lineCap: 'round'
+    }).addTo(map);
+    routeLines.push(dashLine);
+  } else {
+    // Fallback: straight lines segment by segment
+    totalKm = 0;
+    for (let i = 1; i < stops.length; i++) {
+      const a = stops[i-1], b = stops[i];
+      const segKm = haversine(a.lat, a.lng, b.lat, b.lng);
+      totalKm += segKm;
+      const line = L.polyline([[a.lat, a.lng], [b.lat, b.lng]], {
+        color: '#2a8a4a', weight: 4, opacity: 0.85
+      }).addTo(map);
+      routeLines.push(line);
+    }
+    totalMin = Math.round(totalKm / 0.08);
+  }
+
+  // Number markers at each stop
+  for (let i = 1; i < stops.length; i++) {
+    const s = stops[i];
+    const numIcon = L.divIcon({
+      html: '<div style="width:22px;height:22px;border-radius:50%;background:#2a8a4a;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2.5px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.35);">' + i + '</div>',
+      className: '', iconSize: [22,22], iconAnchor: [11,11]
+    });
+    const numMarker = L.marker([s.lat, s.lng], { icon: numIcon, zIndexOffset: 2000 }).addTo(map);
+    routeLines.push(numMarker);
+  }
+
+  document.getElementById('route-distance').textContent = totalKm.toFixed(1) + ' km';
+  document.getElementById('route-time').textContent = totalMin + ' min';
+
+  // Fit map to route
+  const bounds = L.latLngBounds(fullRouteIds.map(id => { const p = places.find(x => x.id === id); return [p.lat, p.lng]; }));
+  map.fitBounds(bounds, { padding: [60, 60] });
+}
+
+function haversine(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function getPriceNum(p) {
+  if (p.type === 'hotel') return -1;
+  if (p.uah === 'Free' || p.uah === '—') return 0;
+  const m = p.uah.match(/\d+/);
+  return m ? parseInt(m[0]) : 999;
+}
+
+function setSort(s, btn) {
+  currentSort = s;
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+
+function setFilter(type, btn) {
+  currentFilter = type;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+
+  // Show/hide markers based on filter
+  if (map) {
+    places.forEach(p => {
+      if (!markers[p.id]) return;
+      if (type === 'all' || p.type === type || p.type === 'hotel') {
+        if (!map.hasLayer(markers[p.id])) markers[p.id].addTo(map);
+      } else {
+        if (map.hasLayer(markers[p.id])) map.removeLayer(markers[p.id]);
+      }
+    });
+  }
+
+  applyFilters();
+}
+
+function applyFilters() {
+  renderList();
+}
+
+function renderList() {
+  const list = document.getElementById('place-list');
+  const query = document.getElementById('search-box').value.toLowerCase().trim();
+
+  let filtered = places.filter(p => {
+    if (currentFilter !== 'all' && p.type !== currentFilter && p.type !== 'hotel') return false;
+    if (query && !p.name.toLowerCase().includes(query) && !p.cuisine.toLowerCase().includes(query)) return false;
+    return true;
+  });
+
+  // Sort
+  if (currentSort === 'distance') {
+    filtered.sort((a, b) => a.walkKm - b.walkKm);
+  } else if (currentSort === 'price-low') {
+    filtered.sort((a, b) => getPriceNum(a) - getPriceNum(b));
+  } else if (currentSort === 'name') {
+    filtered.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  list.innerHTML = '';
+  filtered.forEach(p => {
+    const div = document.createElement('div');
+    const classes = ['place-item'];
+    if (itinerary.includes(p.id)) classes.push('in-itinerary');
+    if (visited.has(p.id)) classes.push('visited');
+    div.className = classes.join(' ');
+    div.id = 'item-' + p.id;
+    div.onclick = () => selectPlace(p.id);
+
+    const priceDisplay = p.type === 'hotel' ? 'Home Base' : p.uah === 'Free' ? 'Free' : p.gbp + ' / ' + p.eur;
+    const walkDisplay = p.walk ? '<span class="walk-tag">🚶 ' + p.walk + '</span>' : '';
+    const itinIdx = itinerary.indexOf(p.id);
+    const badge = visited.has(p.id)
+      ? '<span class="visited-badge">✓</span>'
+      : '<span class="itin-badge">' + (itinIdx >= 0 ? itinIdx + 1 : '') + '</span>';
+
+    div.innerHTML =
+      '<div class="place-icon ' + p.type + '">' + p.emoji + '</div>' +
+      '<div class="place-info"><div class="place-name">' + p.name + '</div>' +
+      '<div class="place-meta"><span>' + p.cuisine + '</span>' +
+      '<span class="price-tag">' + priceDisplay + '</span>' + walkDisplay + '</div></div>' +
+      badge;
+    list.appendChild(div);
+  });
+}
+
+function gmapsUrl(p) {
+  return 'https://www.google.com/maps/dir/?api=1&origin=50.4533,30.5143&destination=' + p.lat + ',' + p.lng + '&travelmode=walking';
+}
+
+function addToItinerary(id) {
+  if (id === 0 || itinerary.includes(id)) return;
+  itinerary.push(id);
+  updateItinerarySummary();
+  renderList();
+}
+
+function toggleVisited(id) {
+  if (id === 0) return;
+  if (visited.has(id)) {
+    visited.delete(id);
+  } else {
+    visited.add(id);
+  }
+  updateMarkerStyle(id);
+  renderList();
+  // Update popup button if open
+  const btn = document.getElementById('visited-btn-' + id);
+  if (btn) {
+    btn.className = 'popup-action-btn btn-visited' + (visited.has(id) ? ' is-visited' : '');
+    btn.textContent = visited.has(id) ? '✓ Visited' : '☐ Mark Visited';
+  }
+}
+
+function updateMarkerStyle(id) {
+  if (!map || !markers[id]) return;
+  const p = places.find(x => x.id === id);
+  if (!p || p.type === 'hotel') return;
+  const isVisited = visited.has(id);
+  const color = p.type === 'restaurant' ? '#C9A84C' : '#2E6EA6';
+  const markerSize = 34;
+  const fontSize = 14;
+  const opacity = isVisited ? 'opacity:0.35;' : '';
+  const bg = isVisited ? 'background:#888;' : 'background:' + color + ';';
+
+  const icon = L.divIcon({
+    html: '<div style="width:' + markerSize + 'px;height:' + markerSize + 'px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);' + bg + 'border:2.5px solid rgba(255,255,255,0.95);box-shadow:0 3px 14px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;position:relative;' + opacity + '"><span style="transform:rotate(45deg);font-size:' + fontSize + 'px;line-height:1;' + (isVisited ? 'filter:grayscale(1);' : '') + '">' + p.emoji + '</span></div>',
+    className: '', iconSize: [markerSize, markerSize], iconAnchor: [markerSize/2, markerSize], popupAnchor: [0, -42]
+  });
+  markers[id].setIcon(icon);
+}
+
+function fixMobileVh() {
+  // Fix 100vh on mobile browsers that don't support dvh
+  const vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty('--vh', vh + 'px');
+}
+
+function init() {
+  // Mobile viewport fix
+  fixMobileVh();
+  window.addEventListener('resize', fixMobileVh);
+  window.addEventListener('orientationchange', () => {
+    setTimeout(() => { fixMobileVh(); if (map) map.invalidateSize(); }, 300);
+  });
+
+  // tap:false is required for modern mobile Chrome/Samsung Internet — they handle touch natively
+  // tap:true causes double-fire on Android Chromium
+  map = L.map('map', { zoomControl: false, tap: false }).setView([50.445, 30.523], 14);
+  activeTileLayer = L.tileLayer(tileLayers[0].url, {
+    attribution: '© OpenStreetMap contributors © CARTO', maxZoom: 19
+  }).addTo(map);
+  L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+  // Force map to recalculate size after a beat (fixes blank map on mobile)
+  setTimeout(() => map.invalidateSize(), 100);
+  setTimeout(() => map.invalidateSize(), 500);
+
+  places.forEach(p => {
+    const color = p.type === 'hotel' ? '#D4534B' : p.type === 'restaurant' ? '#C9A84C' : '#2E6EA6';
+    const markerSize = p.type === 'hotel' ? 44 : 34;
+    const fontSize = p.type === 'hotel' ? 20 : 14;
+    const pulseHtml = p.type === 'hotel' ? '<div class="hotel-pulse"></div>' : '';
+
+    const icon = L.divIcon({
+      html: pulseHtml + '<div style="width:' + markerSize + 'px;height:' + markerSize + 'px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:' + color + ';border:2.5px solid rgba(255,255,255,0.95);box-shadow:0 3px 14px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;position:relative;"><span style="transform:rotate(45deg);font-size:' + fontSize + 'px;line-height:1;">' + p.emoji + '</span></div>',
+      className: '', iconSize: [markerSize, markerSize], iconAnchor: [markerSize/2, markerSize], popupAnchor: [0, -42]
+    });
+
+    const walkHtml = p.walk
+      ? '<div style="background:rgba(212,83,75,0.08);border-radius:8px;padding:7px 12px;margin-bottom:8px;font-size:12px;color:#D4534B;font-weight:500;display:flex;align-items:center;gap:6px;">🚶 ' + p.walk + ' from hotel</div>'
+      : '';
+
+    const hoursHtml = p.hours
+      ? '<div style="font-size:11px;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:4px;">🕐 ' + p.hours + '</div>'
+      : '';
+
+    const pricesHtml = p.type === 'hotel'
+      ? '<div style="background:rgba(212,83,75,0.08);border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:12px;color:#D4534B;font-weight:500;">📍 Sofiivska St 19, Kyiv 01001</div>'
+      : p.uah === 'Free'
+      ? '<div style="background:#f0f7f0;border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:12px;color:#2a6e2a;font-weight:500;">✓ Free entry</div>'
+      : '<div class="popup-prices"><div class="popup-price-chip"><div class="currency">' + (p.type==='sight'?'Entry UAH':'UAH / person') + '</div><div class="amount">' + p.uah + '</div></div><div class="popup-price-chip"><div class="currency">EUR</div><div class="amount">' + p.eur + '</div></div><div class="popup-price-chip"><div class="currency">GBP</div><div class="amount">' + p.gbp + '</div></div></div>';
+
+    const actionsHtml = p.type !== 'hotel'
+      ? '<div class="popup-actions">' +
+        '<a class="popup-action-btn btn-directions" href="' + gmapsUrl(p) + '" target="_blank" rel="noopener">🧭 Directions</a>' +
+        '<button class="popup-action-btn btn-itinerary" onclick="addToItinerary(' + p.id + ')">📋 Route</button>' +
+        '<button id="visited-btn-' + p.id + '" class="popup-action-btn btn-visited" onclick="toggleVisited(' + p.id + ')">☐ Visited</button>' +
+        '</div>'
+      : '';
+
+    const popup =
+      '<div class="popup-inner">' +
+      '<div class="popup-header-img" style="background:' + p.headerGrad + '">' +
+      '<span style="font-size:36px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2));">' + p.emoji + '</span>' +
+      '<span class="overlay-text">' + (p.type === 'hotel' ? '🏨 Your Hotel' : p.type === 'restaurant' ? '🍽 Restaurant' : '🏛 Attraction') + '</span>' +
+      '</div>' +
+      '<div class="popup-body">' +
+      '<div class="popup-name">' + p.name + '</div>' +
+      '<div class="popup-cuisine">' + p.cuisine + '</div>' +
+      hoursHtml + walkHtml + pricesHtml +
+      '<div class="popup-note">' + p.note + '</div>' +
+      actionsHtml +
+      '</div></div>';
+
+    const marker = L.marker([p.lat, p.lng], { icon, zIndexOffset: p.type === 'hotel' ? 1000 : 0 })
+      .addTo(map)
+      .bindPopup(popup, { maxWidth: 300, minWidth: 280 });
+    marker.on('click', () => selectPlace(p.id));
+    // Update visited button state whenever popup opens
+    marker.on('popupopen', () => {
+      const btn = document.getElementById('visited-btn-' + p.id);
+      if (btn) {
+        const v = visited.has(p.id);
+        btn.className = 'popup-action-btn btn-visited' + (v ? ' is-visited' : '');
+        btn.textContent = v ? '✓ Visited' : '☐ Visited';
+      }
+    });
+    markers[p.id] = marker;
+  });
+
+  renderList();
+
+  // Keyboard shortcut: Escape to close sidebar
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && sidebarOpen) toggleSidebar();
+    if (e.key === '/' && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault();
+      document.getElementById('search-box').focus();
+    }
+  });
+
+  // Mobile setup
+  if (window.matchMedia('(max-width: 768px)').matches) {
+    const sidebar = document.getElementById('sidebar');
+    const handle = sidebar.querySelector('.mobile-handle');
+
+    // Start collapsed on mobile so map tiles render fully
+    sidebarOpen = false;
+    sidebar.classList.add('collapsed');
+
+    // After map is ready, force a resize
+    setTimeout(() => {
+      map.invalidateSize();
+      map.setView([50.445, 30.523], 14);
+    }, 200);
+
+    // Swipe gestures on handle
+    let touchStartY = 0;
+    handle.addEventListener('touchstart', e => {
+      touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+
+    handle.addEventListener('touchend', e => {
+      const dy = e.changedTouches[0].clientY - touchStartY;
+      if (Math.abs(dy) < 20) {
+        // Short tap — toggle
+        toggleSidebar();
+      } else if (dy > 40 && sidebarOpen) {
+        toggleSidebar(); // swipe down → collapse
+      } else if (dy < -40 && !sidebarOpen) {
+        toggleSidebar(); // swipe up → expand
+      }
+    }, { passive: true });
+  }
+}
+</script>
+
+<!-- Loading overlay -->
+<div id="loading-overlay" style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;color:#fff;padding:24px;text-align:center;">
+  <div style="font-size:32px;margin-bottom:12px;">🗺</div>
+  <div id="loading-text" style="font-size:16px;font-weight:500;margin-bottom:8px;">Loading Kyiv Guide...</div>
+  <div id="loading-sub" style="font-size:12px;color:rgba(255,255,255,0.5);">Fetching map library</div>
+</div>
+
+<script>
+// Robust script loader with fallback CDN and error display
+(function() {
+  var overlay = document.getElementById('loading-overlay');
+  var loadingText = document.getElementById('loading-text');
+  var loadingSub = document.getElementById('loading-sub');
+  var timeout;
+
+  function onLeafletReady() {
+    clearTimeout(timeout);
+    try {
+      init();
+      overlay.style.transition = 'opacity 0.4s';
+      overlay.style.opacity = '0';
+      setTimeout(function() { overlay.style.display = 'none'; }, 500);
+    } catch(e) {
+      showError('Map init error: ' + e.message);
+      console.error('init() error:', e);
+    }
+  }
+
+  function showError(msg) {
+    clearTimeout(timeout);
+    loadingText.textContent = 'Could not load map';
+    loadingSub.innerHTML = msg + '<br><br>' +
+      '<b>How to open on mobile:</b><br>' +
+      '1. Open Samsung Internet or Chrome<br>' +
+      '2. Tap the address bar<br>' +
+      '3. Type: file:// and browse to this file<br>' +
+      'Or share the file to Chrome via "Open with"<br><br>' +
+      '<small style="color:rgba(255,255,255,0.35);">OneDrive/Files app previews block JavaScript.</small><br><br>' +
+      '<button onclick="location.reload()" style="padding:10px 24px;border-radius:8px;border:1px solid rgba(201,168,76,0.4);background:transparent;color:#E8C96A;font-size:14px;font-family:DM Sans,sans-serif;cursor:pointer;">Retry</button>';
+    loadingSub.style.color = 'rgba(255,255,255,0.7)';
+    loadingSub.style.lineHeight = '1.7';
+    loadingSub.style.maxWidth = '320px';
+  }
+
+  function tryLoad(url, fallbackUrl) {
+    var script = document.createElement('script');
+    script.src = url;
+    script.onload = onLeafletReady;
+    script.onerror = function() {
+      if (fallbackUrl) {
+        loadingSub.textContent = 'Primary CDN failed, trying fallback...';
+        var script2 = document.createElement('script');
+        script2.src = fallbackUrl;
+        script2.onload = onLeafletReady;
+        script2.onerror = function() {
+          showError('Both CDNs failed. Check your internet connection.');
+        };
+        document.body.appendChild(script2);
+      } else {
+        showError('Script load failed. Check your internet connection.');
+      }
+    };
+    document.body.appendChild(script);
+  }
+
+  // 10 second timeout
+  timeout = setTimeout(function() {
+    showError('Timed out loading map library. This usually means the app you opened the file with blocks external scripts.');
+  }, 10000);
+
+  // Primary: unpkg, Fallback: cdnjs
+  tryLoad(
+    'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js'
+  );
+})();
+</script>
+</body>
+</html>
