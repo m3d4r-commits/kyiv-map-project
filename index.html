@@ -706,6 +706,37 @@
   }
   .route-close:hover { color: #fff; }
 
+  .route-gmaps-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: rgba(201,168,76,0.15);
+    border: 1px solid rgba(201,168,76,0.3);
+    text-decoration: none;
+    font-size: 17px;
+    transition: background 0.15s, transform 0.1s;
+    flex-shrink: 0;
+  }
+  .route-gmaps-btn:hover { background: rgba(201,168,76,0.3); transform: scale(1.08); }
+
+  .itinerary-gmaps-link {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 6px 12px;
+    background: rgba(201,168,76,0.15);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 6px;
+    color: var(--gold-light);
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    transition: background 0.15s;
+  }
+  .itinerary-gmaps-link:hover { background: rgba(201,168,76,0.3); }
+
   /* ── Responsive: Tablets ── */
   @media (max-width: 1024px) {
     :root { --sidebar-w: 320px; }
@@ -978,7 +1009,7 @@
     <button id="itinerary-toggle" onclick="toggleItineraryMode()">📋 Itinerary Mode</button>
     <button id="clear-itinerary" onclick="clearItinerary()">✕ Clear</button>
   </div>
-  <div id="itinerary-summary"><div class="summary-inner"><div class="summary-label">Your Route</div><div class="summary-text" id="itinerary-text"></div></div></div>
+  <div id="itinerary-summary"><div class="summary-inner"><div class="summary-label">Your Route</div><div class="summary-text" id="itinerary-text"></div><a id="itinerary-gmaps-link" class="itinerary-gmaps-link" href="#" target="_blank" rel="noopener">🗺️ Open in Google Maps</a></div></div>
   <div id="place-list"></div>
 </div>
 
@@ -996,6 +1027,7 @@
     <div class="route-stat"><div class="val" id="route-distance">—</div><div class="lbl">Distance</div></div>
     <div class="route-stat"><div class="val" id="route-time">—</div><div class="lbl">Walking</div></div>
     <div class="route-stat"><div class="val" id="route-stops">—</div><div class="lbl">Stops</div></div>
+    <a id="route-gmaps-btn" class="route-gmaps-btn" href="#" target="_blank" rel="noopener" title="Open in Google Maps">🗺️</a>
     <button class="route-close" onclick="clearRouteDisplay()">✕</button>
   </div>
   <div id="legend">
@@ -1024,7 +1056,8 @@ const places = [
   { id:13, type:'sight',      emoji:'🏛', name:'Andriyivskyy Descent',                  cuisine:'Historic Street',           uah:'Free',      eur:'Free',     gbp:'Free',     note:"Artists, galleries, Bulgakov's house. Views from Zamkova Hora. Called the Montmartre of Kyiv.", lat:50.4598069, lng:30.5161398, walk:'12 min · 1.0 km', walkKm:1.0, headerGrad:'linear-gradient(135deg,#4A148C,#9C27B0)', hours:'All day' },
   { id:14, type:'sight',      emoji:'🏛', name:'Motherland Monument',                   cuisine:'Monument / War Museum',     uah:'~100',      eur:'~€2.50',   gbp:'~£1.70',   note:'102m titanium statue. Viewing platform inside the head. Park full of tanks, planes, WW2 monuments.', lat:50.4265249, lng:30.5630521, walk:'74 min · 5.9 km', walkKm:5.9, headerGrad:'linear-gradient(135deg,#455A64,#78909C)', hours:'10:00–18:00' },
   { id:15, type:'sight',      emoji:'🏛', name:'PinchukArtCentre',                      cuisine:'Contemporary Art',          uah:'Free',      eur:'Free',     gbp:'Free',     note:'Best contemporary art gallery in the city. Rotating exhibitions. Rooftop café on the 6th floor.', lat:50.4418397, lng:30.5213207, walk:'22 min · 1.8 km', walkKm:1.8, headerGrad:'linear-gradient(135deg,#E91E63,#F48FB1)', hours:'12:00–21:00 (Tue–Sun)' },
-  { id:16, type:'sight',      emoji:'🏛', name:'Independence Square (Maidan)',           cuisine:'Historic Square',           uah:'Free',      eur:'Free',     gbp:'Free',     note:'Central hub of Kyiv. Site of the 2014 revolution. Symbolic to all Ukrainians.', lat:50.4505318, lng:30.5229899, walk:'11 min · 0.9 km', walkKm:0.9, headerGrad:'linear-gradient(135deg,#F57F17,#FFD54F)', hours:'All day' }
+  { id:16, type:'sight',      emoji:'🏛', name:'Independence Square (Maidan)',           cuisine:'Historic Square',           uah:'Free',      eur:'Free',     gbp:'Free',     note:'Central hub of Kyiv. Site of the 2014 revolution. Symbolic to all Ukrainians.', lat:50.4505318, lng:30.5229899, walk:'11 min · 0.9 km', walkKm:0.9, headerGrad:'linear-gradient(135deg,#F57F17,#FFD54F)', hours:'All day' },
+  { id:17, type:'sight',      emoji:'🏡', name:'Pyrohiv Open-Air Museum',                cuisine:'Folk Architecture Museum',  uah:'130',       eur:'~€3.20',   gbp:'~£2.20',   note:'Largest open-air museum in Ukraine. 300+ traditional structures from 16th–20th century villages across all regions. Plan 3–4 hours. Closed Wednesdays.', lat:50.3545, lng:30.5063, walk:'Far · ~11 km (taxi/bus)', walkKm:11.0, headerGrad:'linear-gradient(135deg,#2E7D32,#66BB6A)', hours:'09:00–18:00 (closed Wed)' }
 ];
 
 // State
@@ -1240,6 +1273,8 @@ async function drawRouteTo(place) {
 
   document.getElementById('route-distance').textContent = result.distanceKm.toFixed(1) + ' km';
   document.getElementById('route-time').textContent = result.durationMin + ' min';
+  const gmBtn = document.getElementById('route-gmaps-btn');
+  if (gmBtn) gmBtn.href = gmapsUrl(place);
 }
 
 function clearRouteLines() {
@@ -1304,6 +1339,8 @@ async function updateItinerarySummary() {
   document.getElementById('itinerary-text').innerHTML = names.join('<br>') +
     '<br><span style="color:var(--gold-light);font-weight:600;margin-top:4px;display:inline-block;">≈ ' +
     totalKm.toFixed(1) + ' km · ~' + totalMin + ' min walking</span>';
+  const gmapsLink = document.getElementById('itinerary-gmaps-link');
+  if (gmapsLink) gmapsLink.href = gmapsItineraryUrl();
 }
 
 async function drawItineraryRoute() {
@@ -1373,6 +1410,8 @@ async function drawItineraryRoute() {
 
   document.getElementById('route-distance').textContent = totalKm.toFixed(1) + ' km';
   document.getElementById('route-time').textContent = totalMin + ' min';
+  const gmBtn = document.getElementById('route-gmaps-btn');
+  if (gmBtn) gmBtn.href = gmapsItineraryUrl();
 
   // Fit map to route
   const bounds = L.latLngBounds(fullRouteIds.map(id => { const p = places.find(x => x.id === id); return [p.lat, p.lng]; }));
@@ -1473,6 +1512,22 @@ function renderList() {
 
 function gmapsUrl(p) {
   return 'https://www.google.com/maps/dir/?api=1&origin=50.4533,30.5143&destination=' + p.lat + ',' + p.lng + '&travelmode=walking';
+}
+
+function gmapsItineraryUrl() {
+  if (itinerary.length === 0) return '#';
+  const hotel = places.find(p => p.id === 0);
+  const stops = itinerary.map(id => places.find(p => p.id === id));
+  const dest = stops[stops.length - 1];
+  const waypoints = stops.slice(0, -1);
+  let url = 'https://www.google.com/maps/dir/?api=1' +
+    '&origin=' + hotel.lat + ',' + hotel.lng +
+    '&destination=' + dest.lat + ',' + dest.lng +
+    '&travelmode=walking';
+  if (waypoints.length > 0) {
+    url += '&waypoints=' + waypoints.map(p => p.lat + ',' + p.lng).join('|');
+  }
+  return url;
 }
 
 function addToItinerary(id) {
