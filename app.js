@@ -152,7 +152,7 @@ function buildPopupHtml(p) {
     : p.uah === 'Free'
     ? '<div class="popup-free-badge">✓ Free entry</div>'
     : '<div class="popup-prices"><div class="popup-price-chip"><div class="currency">' + (p.type==='sight'?'Entry UAH':p.type==='hotel'?'Per night':'UAH / person') + '</div><div class="amount">' + p.uah + '</div></div><div class="popup-price-chip"><div class="currency">EUR</div><div class="amount">' + p.eur + '</div></div><div class="popup-price-chip"><div class="currency">GBP</div><div class="amount">' + p.gbp + '</div></div></div>';
-  const setBaseOnclick = 'setHomeBase(' + p.lat + ',' + p.lng + ',\'' + p.name.replace(/'/g, "\\'") + '\');if(homeBaseMarker&&map)homeBaseMarker.setLatLng([' + p.lat + ',' + p.lng + ']);';
+  const setBaseOnclick = 'setHomeBase(' + p.lat + ',' + p.lng + ',\'' + p.name.replace(/'/g, "\\'") + '\',true);';
   const isFirstBase = p.type === 'hotel' && !homeBaseSet;
   const setBaseBtn = p.type === 'hotel' && !isFirstBase
     ? '<button class="popup-action-btn btn-base" onclick="' + setBaseOnclick + '">📍 Set as Base</button>'
@@ -830,15 +830,21 @@ function updateMarkerStyle(id) {
   markers[id].setIcon(icon);
 }
 
-function setHomeBase(lat, lng, name) {
+function setHomeBase(lat, lng, name, fromHotel) {
+  // Close mobile detail sheet before modifying markers
+  if (typeof closeMobileDetail === 'function' && mobileDetailPlaceId !== null) {
+    closeMobileDetail();
+  }
   homeBase = { lat, lng, name: name || 'Your Location' };
   homeBaseSet = true;
-  // Hide hotel markers (but keep homeBaseMarker visible)
-  hotelsHidden = true;
-  if (map) {
-    places.filter(p => p.type === 'hotel').forEach(p => {
-      if (markers[p.id] && map.hasLayer(markers[p.id])) map.removeLayer(markers[p.id]);
-    });
+  // Only hide hotel markers when base was set from a hotel popup
+  if (fromHotel) {
+    hotelsHidden = true;
+    if (map) {
+      places.filter(p => p.type === 'hotel').forEach(p => {
+        if (markers[p.id] && map.hasLayer(markers[p.id])) map.removeLayer(markers[p.id]);
+      });
+    }
   }
   // Update home base marker
   if (homeBaseMarker && map) {
