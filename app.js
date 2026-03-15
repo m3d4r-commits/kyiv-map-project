@@ -763,7 +763,7 @@ function init() {
     toast.innerHTML = '📍 <strong>Tip:</strong> Tap any hotel and "Set as Base" to get walking distances from your stay.';
     const isMobile = window.matchMedia('(max-width: 768px)').matches;
     toast.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);background:rgba(26,58,92,0.97);color:#fff;padding:12px 20px;border-radius:12px;font-size:13px;font-family:DM Sans,sans-serif;z-index:2000;max-width:420px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.3);cursor:pointer;'
-      + (isMobile ? 'top:12px;bottom:auto;max-width:calc(100vw - 32px);' : 'bottom:24px;backdrop-filter:blur(8px);');
+      + (isMobile ? 'top:52px;bottom:auto;max-width:calc(100vw - 32px);' : 'bottom:24px;backdrop-filter:blur(8px);');
     toast.onclick = () => toast.remove();
     document.body.appendChild(toast);
     setTimeout(() => { if (toast.parentNode) toast.style.opacity = '0'; toast.style.transition = 'opacity 0.5s'; setTimeout(() => toast.remove(), 600); }, 8000);
