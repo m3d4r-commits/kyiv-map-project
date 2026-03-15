@@ -782,7 +782,7 @@
       height: 100dvh !important;
     }
 
-    /* Sidebar: fixed bottom sheet */
+    /* Sidebar: fixed bottom sheet — starts collapsed to prevent FOUC */
     #sidebar {
       position: fixed;
       z-index: 1000;
@@ -801,33 +801,44 @@
       /* Reset desktop collapse styles */
       margin-left: 0 !important;
       opacity: 1 !important;
+      /* Start collapsed so sidebar doesn't flash full-height before JS runs */
+      transform: translateY(calc(100% - 52px));
     }
 
+    /* Sidebar starts collapsed via CSS; .collapsed keeps it there */
     #sidebar.collapsed {
       transform: translateY(calc(100% - 52px));
       pointer-events: auto;
     }
 
-    /* Peek bar visible when collapsed */
-    #sidebar.collapsed .mobile-handle { pointer-events: auto; }
-    #sidebar.collapsed #sidebar-header,
-    #sidebar.collapsed #search-sort,
-    #sidebar.collapsed #filter-tabs,
-    #sidebar.collapsed #itinerary-bar,
-    #sidebar.collapsed #itinerary-summary,
-    #sidebar.collapsed #place-list {
-      pointer-events: none;
-      visibility: hidden;
+    /* Expanded = JS has opened it, reset transform */
+    #sidebar.expanded {
+      transform: translateY(0);
     }
 
-    /* Un-hide when expanded */
+    /* Content hidden by default (sidebar starts collapsed via CSS) */
     #sidebar #sidebar-header,
     #sidebar #search-sort,
     #sidebar #filter-tabs,
     #sidebar #itinerary-bar,
     #sidebar #itinerary-summary,
     #sidebar #place-list {
+      pointer-events: none;
+      visibility: hidden;
+    }
+
+    /* Peek bar always interactive when collapsed */
+    #sidebar.collapsed .mobile-handle { pointer-events: auto; }
+
+    /* Un-hide when expanded */
+    #sidebar.expanded #sidebar-header,
+    #sidebar.expanded #search-sort,
+    #sidebar.expanded #filter-tabs,
+    #sidebar.expanded #itinerary-bar,
+    #sidebar.expanded #itinerary-summary,
+    #sidebar.expanded #place-list {
       visibility: visible;
+      pointer-events: auto;
     }
 
     .mobile-handle {

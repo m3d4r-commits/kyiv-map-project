@@ -76,7 +76,9 @@ function getRouteDashColor() {
 
 function toggleSidebar() {
   sidebarOpen = !sidebarOpen;
-  document.getElementById('sidebar').classList.toggle('collapsed', !sidebarOpen);
+  const sb = document.getElementById('sidebar');
+  sb.classList.toggle('collapsed', !sidebarOpen);
+  sb.classList.toggle('expanded', sidebarOpen);
   const toggleIcon = document.getElementById('toggle-icon');
   const toggleLabel = document.getElementById('toggle-label');
   if (toggleIcon) toggleIcon.textContent = sidebarOpen ? '✕' : '☰';
@@ -774,6 +776,7 @@ function init() {
     // Start collapsed on mobile so map tiles render fully
     sidebarOpen = false;
     sidebar.classList.add('collapsed');
+    sidebar.classList.remove('expanded');
 
     // After map is ready, force a resize
     setTimeout(() => {
