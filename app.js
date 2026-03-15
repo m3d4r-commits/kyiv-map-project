@@ -793,6 +793,7 @@ function toggleVisited(id) {
   } else {
     visited.add(id);
   }
+  localStorage.setItem('kyiv-visited', JSON.stringify([...visited]));
   updateMarkerStyle(id);
   renderList();
   // Update popup button if open
@@ -945,6 +946,12 @@ function init() {
   // Load starred place from localStorage
   const savedStar = localStorage.getItem('kyiv-starred');
   if (savedStar) starredId = parseInt(savedStar);
+
+  // Load visited places from localStorage
+  const savedVisited = localStorage.getItem('kyiv-visited');
+  if (savedVisited) {
+    try { JSON.parse(savedVisited).forEach(id => visited.add(id)); } catch(e) {}
+  }
 
   const mobile = isMobile();
   places.forEach(p => {
