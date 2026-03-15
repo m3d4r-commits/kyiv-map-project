@@ -46,6 +46,7 @@
   </div>
   <div id="itinerary-summary"><div class="summary-inner"><div class="summary-label">Your Route</div><div class="summary-text" id="itinerary-text"></div><a id="itinerary-gmaps-link" class="itinerary-gmaps-link" href="#" target="_blank" rel="noopener">🗺️ Open in Google Maps</a></div></div>
   <div id="place-list"></div>
+  <div id="detail-sheet" style="display:none"></div>
 </div>
 
 <div style="position:relative; flex:1;">
@@ -55,11 +56,14 @@
     <span class="label" id="toggle-label">Menu</span>
   </button>
   <div class="map-controls">
-    <button class="map-ctrl-btn" id="homebase-label" onclick="if(homeBaseMarker&&map){map.setView(homeBaseMarker.getLatLng(),16);homeBaseMarker.openPopup();}">📍 My Base</button>
-    <button class="map-ctrl-btn" id="set-homebase-btn" onclick="toggleSetHomeBase()">📍 Set Base</button>
-    <button class="map-ctrl-btn" onclick="detectGPS()">◎ GPS</button>
-    <button class="map-ctrl-btn" onclick="fitAllMarkers()">⊡ Fit All</button>
-    <button class="map-ctrl-btn" id="style-btn" onclick="cycleMapStyle()">🗺 Dark</button>
+    <button class="map-ctrl-toggle" id="ctrl-toggle" onclick="toggleMapControls()">⚙</button>
+    <div class="map-ctrl-group" id="ctrl-group">
+      <button class="map-ctrl-btn" id="homebase-label" onclick="if(homeBaseMarker&&map){map.setView(homeBaseMarker.getLatLng(),16);homeBaseMarker.openPopup();};closeMapControls()">📍 My Base</button>
+      <button class="map-ctrl-btn" id="set-homebase-btn" onclick="toggleSetHomeBase();closeMapControls()">📍 Set Base</button>
+      <button class="map-ctrl-btn" onclick="detectGPS();closeMapControls()">◎ GPS</button>
+      <button class="map-ctrl-btn" onclick="fitAllMarkers();closeMapControls()">⊡ Fit All</button>
+      <button class="map-ctrl-btn" id="style-btn" onclick="cycleMapStyle();closeMapControls()">🗺 Dark</button>
+    </div>
   </div>
   <div class="route-info-box" id="route-info">
     <div class="route-stat"><div class="val" id="route-distance">—</div><div class="lbl">Distance</div></div>

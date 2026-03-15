@@ -42,18 +42,23 @@ let map, clusterGroup;
 let currentFilter = 'all';
 let currentSort = 'default';
 let sidebarOpen = true;
+let sheetState = 'collapsed'; // 'hidden' | 'collapsed' | 'open' | 'detail'
+let mobileDetailPlaceId = null;
+let activePinId = null;
+const mobileQuery = window.matchMedia('(max-width: 768px)');
 let itineraryMode = false;
 let itinerary = []; // ordered list of place ids
 let visited = new Set(); // ids of visited places
 let routeLines = [];
-let currentMapStyle = 1;
+let currentMapStyle = 0;
 let homeBase = { lat: 50.4505, lng: 30.5230, name: 'City Center' };
 let homeBaseMarker = null;
 let settingHomeBase = false;
 let homeBaseSet = false;
+let hotelsHidden = false;
+let starredId = null;
 
 const tileLayers = [
-  { name:'Light',     url:'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png' },
   { name:'Dark',      url:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' },
   { name:'Streets',   url:'https://tile.openstreetmap.org/{z}/{x}/{y}.png' },
   { name:'Satellite', url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}' }
@@ -75,6 +80,14 @@ function getRouteDashColor() {
 }
 
 function toggleSidebar() {
+  if (isMobile()) {
+    if (sheetState === 'collapsed' || sheetState === 'hidden') {
+      setSheetState('open');
+    } else {
+      setSheetState('collapsed');
+    }
+    return;
+  }
   sidebarOpen = !sidebarOpen;
   const sb = document.getElementById('sidebar');
   sb.classList.toggle('collapsed', !sidebarOpen);
@@ -88,6 +101,213 @@ function toggleSidebar() {
     setTimeout(() => map.invalidateSize(), 100);
     setTimeout(() => map.invalidateSize(), 400);
   }
+}
+
+function setSheetState(state) {
+  sheetState = state;
+  const sb = document.getElementById('sidebar');
+  sb.classList.remove('sheet-hidden', 'sheet-collapsed', 'sheet-open', 'sheet-detail', 'collapsed', 'expanded');
+  sb.classList.add('sheet-' + state);
+  // Body class for zoom control positioning
+  document.body.classList.remove('sheet-state-hidden', 'sheet-state-collapsed', 'sheet-state-open', 'sheet-state-detail', 'sidebar-open');
+  document.body.classList.add('sheet-state-' + state);
+  if (state === 'open') document.body.classList.add('sidebar-open');
+  sidebarOpen = (state === 'open');
+  if (map) setTimeout(() => map.invalidateSize(), 100);
+}
+
+function isMobile() {
+  return mobileQuery.matches;
+}
+
+function createPinIcon(place, opts) {
+  opts = opts || {};
+  const isVisited = opts.visited || false;
+  const isActive = opts.active || false;
+  const simple = opts.simple || false;
+  const color = place.type === 'hotel' ? '#8B5CF6' : place.type === 'restaurant' ? '#C9A84C' : '#2E6EA6';
+  const markerSize = simple && !isActive ? 24 : 34;
+  const fontSize = simple && !isActive ? 10 : 14;
+  const opacity = isVisited ? 'opacity:0.35;' : '';
+  const bg = isVisited ? 'background:#888;' : 'background:' + color + ';';
+  const showEmoji = !simple || isActive;
+  const emojiHtml = showEmoji
+    ? '<span style="transform:rotate(45deg);font-size:' + fontSize + 'px;line-height:1;' + (isVisited ? 'filter:grayscale(1);' : '') + '">' + place.emoji + '</span>'
+    : '';
+
+  return L.divIcon({
+    html: '<div style="width:' + markerSize + 'px;height:' + markerSize + 'px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);' + bg + 'border:2.5px solid rgba(255,255,255,0.95);box-shadow:0 3px 14px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;position:relative;' + opacity + '">' + emojiHtml + '</div>',
+    className: '', iconSize: [markerSize, markerSize], iconAnchor: [markerSize/2, markerSize], popupAnchor: [0, -42]
+  });
+}
+
+function buildPopupHtml(p) {
+  const walkHtml = p.walk
+    ? '<div class="popup-walk-badge">🚶 ' + p.walk + ' from base</div>'
+    : '';
+  const hoursHtml = p.hours
+    ? '<div class="popup-hours">🕐 ' + p.hours + '</div>'
+    : '';
+  const pricesHtml = p.uah === '—' || !p.uah
+    ? ''
+    : p.uah === 'Free'
+    ? '<div class="popup-free-badge">✓ Free entry</div>'
+    : '<div class="popup-prices"><div class="popup-price-chip"><div class="currency">' + (p.type==='sight'?'Entry UAH':p.type==='hotel'?'Per night':'UAH / person') + '</div><div class="amount">' + p.uah + '</div></div><div class="popup-price-chip"><div class="currency">EUR</div><div class="amount">' + p.eur + '</div></div><div class="popup-price-chip"><div class="currency">GBP</div><div class="amount">' + p.gbp + '</div></div></div>';
+  const setBaseBtn = p.type === 'hotel'
+    ? '<button class="popup-action-btn btn-base" onclick="setHomeBase(' + p.lat + ',' + p.lng + ',\'' + p.name.replace(/'/g, "\\'") + '\');if(homeBaseMarker&&map)homeBaseMarker.setLatLng([' + p.lat + ',' + p.lng + ']);">📍 Set as Base</button>'
+    : '';
+  const starBtn = '<button id="star-btn-' + p.id + '" class="popup-action-btn btn-star" onclick="toggleStar(' + p.id + ')">' + (starredId === p.id ? '★ Starred' : '☆ Star') + '</button>';
+  const actionsHtml = '<div class="popup-actions">' +
+    '<button class="popup-action-btn btn-directions" onclick="event.stopPropagation();window.open(\'' + gmapsUrl(p) + '\',\'_blank\')">🧭 Google Maps</button>' +
+    '<button class="popup-action-btn btn-itinerary" onclick="addToItinerary(' + p.id + ')">📋 Route</button>' +
+    '<button id="visited-btn-' + p.id + '" class="popup-action-btn btn-visited" onclick="toggleVisited(' + p.id + ')">' + (visited.has(p.id) ? '✓ Visited' : '☐ Visited') + '</button>' +
+    starBtn + setBaseBtn +
+    '</div>';
+
+  return '<div class="popup-inner">' +
+    '<div class="popup-header-img" style="background:' + p.headerGrad + '">' +
+    '<span style="font-size:36px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2));">' + p.emoji + '</span>' +
+    '<span class="overlay-text">' + (p.type === 'hotel' ? '🏨 Hotel' : p.type === 'restaurant' ? '🍽 Restaurant' : '🏛 Attraction') + '</span>' +
+    '</div>' +
+    '<div class="popup-body">' +
+    '<div class="popup-name">' + (p.url ? '<a href="' + p.url + '" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;border-bottom:1.5px solid var(--gold);padding-bottom:1px;transition:color 0.15s;">' + p.name + ' ↗</a>' : p.name) + '</div>' +
+    '<div class="popup-cuisine">' + p.cuisine + '</div>' +
+    hoursHtml + walkHtml + pricesHtml +
+    '<div class="popup-note">' + p.note + '</div>' +
+    actionsHtml +
+    '</div></div>';
+}
+
+function showMobileDetail(id) {
+  const p = places.find(x => x.id === id);
+  if (!p) return;
+
+  // Highlight in sidebar list
+  if (activeItem !== null) {
+    const prev = document.getElementById('item-' + activeItem);
+    if (prev) prev.classList.remove('active');
+  }
+  activeItem = id;
+  mobileDetailPlaceId = id;
+
+  // Set active pin icon (with emoji)
+  if (activePinId && markers[activePinId]) {
+    const prevPlace = places.find(x => x.id === activePinId);
+    if (prevPlace) markers[activePinId].setIcon(createPinIcon(prevPlace, { simple: true, visited: visited.has(activePinId) }));
+  }
+  activePinId = id;
+  if (markers[id]) markers[id].setIcon(createPinIcon(p, { simple: true, active: true, visited: visited.has(id) }));
+
+  // Build detail content
+  const detail = document.getElementById('detail-sheet');
+  detail.innerHTML = '<button class="detail-back" onclick="closeMobileDetail()">← Back to list</button>' + buildPopupHtml(p);
+  detail.style.display = 'block';
+
+  setSheetState('detail');
+  // Center map on place
+  if (map) map.setView([p.lat, p.lng], 16, { animate: true });
+  drawRouteTo(p);
+}
+
+function closeMobileDetail() {
+  mobileDetailPlaceId = null;
+  const detail = document.getElementById('detail-sheet');
+  detail.style.display = 'none';
+  detail.innerHTML = '';
+
+  // Revert active pin
+  if (activePinId && markers[activePinId]) {
+    const p = places.find(x => x.id === activePinId);
+    if (p) markers[activePinId].setIcon(createPinIcon(p, { simple: true, visited: visited.has(activePinId) }));
+    activePinId = null;
+  }
+
+  setSheetState('collapsed');
+}
+
+function initMobileSheet() {
+  const sidebar = document.getElementById('sidebar');
+  const handle = sidebar.querySelector('.mobile-handle');
+  let touchStartY = 0;
+  let touchStartTime = 0;
+  let isDragging = false;
+  const sidebarHeight = () => sidebar.offsetHeight;
+
+  handle.addEventListener('touchstart', e => {
+    touchStartY = e.touches[0].clientY;
+    touchStartTime = Date.now();
+    isDragging = false;
+  }, { passive: true });
+
+  handle.addEventListener('touchmove', e => {
+    const dy = e.touches[0].clientY - touchStartY;
+    if (Math.abs(dy) > 10) {
+      isDragging = true;
+      sidebar.classList.add('sheet-dragging');
+      // Calculate current position based on state and apply delta
+      const h = sidebarHeight();
+      let baseOffset;
+      if (sheetState === 'hidden') baseOffset = h - 52;
+      else if (sheetState === 'collapsed') baseOffset = h - 190;
+      else if (sheetState === 'detail') baseOffset = h - window.innerHeight * 0.6;
+      else baseOffset = 0;
+      const newOffset = Math.max(0, Math.min(h - 52, baseOffset + dy));
+      sidebar.style.transform = 'translateY(' + newOffset + 'px)';
+    }
+  }, { passive: true });
+
+  handle.addEventListener('touchend', e => {
+    sidebar.classList.remove('sheet-dragging');
+    sidebar.style.transform = '';
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    const dt = Date.now() - touchStartTime;
+    const velocity = Math.abs(dy) / dt; // px/ms
+
+    if (!isDragging && Math.abs(dy) < 15) {
+      // Short tap — cycle between collapsed and open
+      if (sheetState === 'collapsed' || sheetState === 'hidden') {
+        setSheetState('open');
+      } else if (sheetState === 'open') {
+        setSheetState('collapsed');
+      } else if (sheetState === 'detail') {
+        closeMobileDetail();
+      }
+      return;
+    }
+
+    // Fast swipe
+    if (velocity > 0.4) {
+      if (dy > 0) {
+        // Swipe down
+        if (sheetState === 'detail') closeMobileDetail();
+        else if (sheetState === 'open') setSheetState('collapsed');
+        else setSheetState('hidden');
+      } else {
+        // Swipe up
+        if (sheetState === 'hidden') setSheetState('collapsed');
+        else setSheetState('open');
+      }
+      return;
+    }
+
+    // Slow drag — snap to nearest based on final position
+    if (dy > 60) {
+      if (sheetState === 'detail') closeMobileDetail();
+      else if (sheetState === 'open') setSheetState('collapsed');
+      else if (sheetState === 'collapsed') setSheetState('hidden');
+    } else if (dy < -60) {
+      if (sheetState === 'hidden') setSheetState('collapsed');
+      else if (sheetState === 'collapsed') setSheetState('open');
+    }
+  }, { passive: true });
+}
+
+function toggleMapControls() {
+  document.getElementById('ctrl-group').classList.toggle('open');
+}
+
+function closeMapControls() {
+  if (isMobile()) document.getElementById('ctrl-group').classList.remove('open');
 }
 
 function cycleMapStyle() {
@@ -126,6 +346,11 @@ function selectPlace(id) {
     toggleItineraryStop(id);
     return;
   }
+  // Mobile: use detail bottom sheet instead of popup
+  if (isMobile()) {
+    showMobileDetail(id);
+    return;
+  }
   if (activeItem !== null) {
     const prev = document.getElementById('item-' + activeItem);
     if (prev) prev.classList.remove('active');
@@ -136,19 +361,9 @@ function selectPlace(id) {
   const p = places.find(x => x.id === id);
   if (p && map) {
     const marker = markers[id];
-    // On mobile, collapse sidebar first so the map is visible
-    if (window.innerWidth <= 768 && sidebarOpen) {
-      toggleSidebar();
-      setTimeout(() => {
-        map.setView([p.lat, p.lng], 16, { animate:true });
-        if (marker) marker.openPopup();
-        drawRouteTo(p);
-      }, 400);
-    } else {
-      map.setView([p.lat, p.lng], 16, { animate:true });
-      if (marker) marker.openPopup();
-      drawRouteTo(p);
-    }
+    map.setView([p.lat, p.lng], 16, { animate:true });
+    if (marker) marker.openPopup();
+    drawRouteTo(p);
   }
 }
 
@@ -457,7 +672,10 @@ function setFilter(type, btn) {
   if (map) {
     places.forEach(p => {
       if (!markers[p.id]) return;
-      if (type === 'all' || p.type === type) {
+      const shouldShow = (type === 'all' || p.type === type);
+      // Respect hotelsHidden unless user explicitly filters to hotels
+      const isHiddenHotel = hotelsHidden && p.type === 'hotel' && type !== 'hotel';
+      if (shouldShow && !isHiddenHotel) {
         if (!map.hasLayer(markers[p.id])) markers[p.id].addTo(map);
       } else {
         if (map.hasLayer(markers[p.id])) map.removeLayer(markers[p.id]);
@@ -478,6 +696,8 @@ function renderList() {
 
   let filtered = places.filter(p => {
     if (currentFilter !== 'all' && p.type !== currentFilter) return false;
+    // Hide hotels after base is set (unless user explicitly filters to hotels)
+    if (hotelsHidden && p.type === 'hotel' && currentFilter !== 'hotel') return false;
     if (query && !p.name.toLowerCase().includes(query) && !p.cuisine.toLowerCase().includes(query)) return false;
     return true;
   });
@@ -489,6 +709,15 @@ function renderList() {
     filtered.sort((a, b) => getPriceNum(a) - getPriceNum(b));
   } else if (currentSort === 'name') {
     filtered.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  // Float starred item to top
+  if (starredId !== null) {
+    const idx = filtered.findIndex(p => p.id === starredId);
+    if (idx > 0) {
+      const [starred] = filtered.splice(idx, 1);
+      filtered.unshift(starred);
+    }
   }
 
   list.innerHTML = '';
@@ -504,6 +733,7 @@ function renderList() {
     const priceDisplay = p.uah === '—' ? '' : p.uah === 'Free' ? 'Free' : p.gbp + ' / ' + p.eur;
     const walkDisplay = p.walk ? '<span class="walk-tag">🚶 ' + p.walk + '</span>' : '';
     const itinIdx = itinerary.indexOf(p.id);
+    const starBadge = starredId === p.id ? '<span class="starred-badge">★</span>' : '';
     const badge = visited.has(p.id)
       ? '<span class="visited-badge">✓</span>'
       : '<span class="itin-badge">' + (itinIdx >= 0 ? itinIdx + 1 : '') + '</span>';
@@ -515,7 +745,7 @@ function renderList() {
       '<div class="place-info"><div class="place-name">' + p.name + '</div>' +
       '<div class="place-meta"><span>' + p.cuisine + '</span>' +
       '<span class="price-tag">' + priceDisplay + '</span>' + walkDisplay + '</div></div>' +
-      gmapsBtnHtml + badge;
+      starBadge + gmapsBtnHtml + badge;
     list.appendChild(div);
   });
 }
@@ -568,20 +798,30 @@ function toggleVisited(id) {
   }
 }
 
+function toggleStar(id) {
+  if (starredId === id) {
+    starredId = null;
+    localStorage.removeItem('kyiv-starred');
+  } else {
+    starredId = id;
+    localStorage.setItem('kyiv-starred', id);
+  }
+  // Update star button if visible
+  const btn = document.getElementById('star-btn-' + id);
+  if (btn) btn.textContent = starredId === id ? '★ Starred' : '☆ Star';
+  // Update marker icon
+  updateMarkerStyle(id);
+  renderList();
+}
+
 function updateMarkerStyle(id) {
   if (!map || !markers[id]) return;
   const p = places.find(x => x.id === id);
   if (!p) return;
-  const isVisited = visited.has(id);
-  const color = p.type === 'hotel' ? '#8B5CF6' : p.type === 'restaurant' ? '#C9A84C' : '#2E6EA6';
-  const markerSize = 34;
-  const fontSize = 14;
-  const opacity = isVisited ? 'opacity:0.35;' : '';
-  const bg = isVisited ? 'background:#888;' : 'background:' + color + ';';
-
-  const icon = L.divIcon({
-    html: '<div style="width:' + markerSize + 'px;height:' + markerSize + 'px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);' + bg + 'border:2.5px solid rgba(255,255,255,0.95);box-shadow:0 3px 14px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;position:relative;' + opacity + '"><span style="transform:rotate(45deg);font-size:' + fontSize + 'px;line-height:1;' + (isVisited ? 'filter:grayscale(1);' : '') + '">' + p.emoji + '</span></div>',
-    className: '', iconSize: [markerSize, markerSize], iconAnchor: [markerSize/2, markerSize], popupAnchor: [0, -42]
+  const icon = createPinIcon(p, {
+    simple: isMobile(),
+    active: activePinId === id,
+    visited: visited.has(id)
   });
   markers[id].setIcon(icon);
 }
@@ -589,6 +829,13 @@ function updateMarkerStyle(id) {
 function setHomeBase(lat, lng, name) {
   homeBase = { lat, lng, name: name || 'Your Location' };
   homeBaseSet = true;
+  // Hide hotel markers (but keep homeBaseMarker visible)
+  hotelsHidden = true;
+  if (map) {
+    places.filter(p => p.type === 'hotel').forEach(p => {
+      if (markers[p.id] && map.hasLayer(markers[p.id])) map.removeLayer(markers[p.id]);
+    });
+  }
   // Update home base marker
   if (homeBaseMarker && map) {
     homeBaseMarker.setLatLng([lat, lng]);
@@ -648,7 +895,7 @@ function init() {
   // tap:false is required for modern mobile Chrome/Samsung Internet — they handle touch natively
   // tap:true causes double-fire on Android Chromium
   map = L.map('map', { zoomControl: false, tap: false }).setView([50.445, 30.523], 14);
-  activeTileLayer = L.tileLayer(tileLayers[1].url, {
+  activeTileLayer = L.tileLayer(tileLayers[0].url, {
     attribution: '© OpenStreetMap contributors © CARTO', maxZoom: 19
   }).addTo(map);
   document.body.classList.add('dark-map');
@@ -658,61 +905,30 @@ function init() {
   setTimeout(() => map.invalidateSize(), 100);
   setTimeout(() => map.invalidateSize(), 500);
 
+  // Load starred place from localStorage
+  const savedStar = localStorage.getItem('kyiv-starred');
+  if (savedStar) starredId = parseInt(savedStar);
+
+  const mobile = isMobile();
   places.forEach(p => {
-    const color = p.type === 'hotel' ? '#8B5CF6' : p.type === 'restaurant' ? '#C9A84C' : '#2E6EA6';
-    const markerSize = 34;
-    const fontSize = 14;
-    const pulseHtml = '';
+    const icon = createPinIcon(p, { simple: mobile });
+    const popup = buildPopupHtml(p);
 
-    const icon = L.divIcon({
-      html: pulseHtml + '<div style="width:' + markerSize + 'px;height:' + markerSize + 'px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:' + color + ';border:2.5px solid rgba(255,255,255,0.95);box-shadow:0 3px 14px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;position:relative;"><span style="transform:rotate(45deg);font-size:' + fontSize + 'px;line-height:1;">' + p.emoji + '</span></div>',
-      className: '', iconSize: [markerSize, markerSize], iconAnchor: [markerSize/2, markerSize], popupAnchor: [0, -42]
+    const marker = L.marker([p.lat, p.lng], { icon, zIndexOffset: 0 }).addTo(map);
+
+    // Desktop: bind Leaflet popup; mobile: popups suppressed via CSS
+    if (!mobile) {
+      marker.bindPopup(popup, { maxWidth: 300, minWidth: 280 });
+    }
+
+    marker.on('click', () => {
+      if (isMobile()) {
+        showMobileDetail(p.id);
+      } else {
+        selectPlace(p.id);
+      }
     });
-
-    const walkHtml = p.walk
-      ? '<div class="popup-walk-badge">🚶 ' + p.walk + ' from base</div>'
-      : '';
-
-    const hoursHtml = p.hours
-      ? '<div class="popup-hours">🕐 ' + p.hours + '</div>'
-      : '';
-
-    const pricesHtml = p.uah === '—' || !p.uah
-      ? ''
-      : p.uah === 'Free'
-      ? '<div class="popup-free-badge">✓ Free entry</div>'
-      : '<div class="popup-prices"><div class="popup-price-chip"><div class="currency">' + (p.type==='sight'?'Entry UAH':p.type==='hotel'?'Per night':'UAH / person') + '</div><div class="amount">' + p.uah + '</div></div><div class="popup-price-chip"><div class="currency">EUR</div><div class="amount">' + p.eur + '</div></div><div class="popup-price-chip"><div class="currency">GBP</div><div class="amount">' + p.gbp + '</div></div></div>';
-
-    const setBaseBtn = p.type === 'hotel'
-      ? '<button class="popup-action-btn btn-base" onclick="setHomeBase(' + p.lat + ',' + p.lng + ',\'' + p.name.replace(/'/g, "\\'") + '\');if(homeBaseMarker&&map)homeBaseMarker.setLatLng([' + p.lat + ',' + p.lng + ']);">📍 Set as Base</button>'
-      : '';
-
-    const actionsHtml = '<div class="popup-actions">' +
-        '<button class="popup-action-btn btn-directions" onclick="event.stopPropagation();window.open(\'' + gmapsUrl(p) + '\',\'_blank\')">🧭 Google Maps</button>' +
-        '<button class="popup-action-btn btn-itinerary" onclick="addToItinerary(' + p.id + ')">📋 Route</button>' +
-        '<button id="visited-btn-' + p.id + '" class="popup-action-btn btn-visited" onclick="toggleVisited(' + p.id + ')">☐ Visited</button>' +
-        setBaseBtn +
-        '</div>';
-
-    const popup =
-      '<div class="popup-inner">' +
-      '<div class="popup-header-img" style="background:' + p.headerGrad + '">' +
-      '<span style="font-size:36px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2));">' + p.emoji + '</span>' +
-      '<span class="overlay-text">' + (p.type === 'hotel' ? '🏨 Hotel' : p.type === 'restaurant' ? '🍽 Restaurant' : '🏛 Attraction') + '</span>' +
-      '</div>' +
-      '<div class="popup-body">' +
-      '<div class="popup-name">' + (p.url ? '<a href="' + p.url + '" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;border-bottom:1.5px solid var(--gold);padding-bottom:1px;transition:color 0.15s;">' + p.name + ' ↗</a>' : p.name) + '</div>' +
-      '<div class="popup-cuisine">' + p.cuisine + '</div>' +
-      hoursHtml + walkHtml + pricesHtml +
-      '<div class="popup-note">' + p.note + '</div>' +
-      actionsHtml +
-      '</div></div>';
-
-    const marker = L.marker([p.lat, p.lng], { icon, zIndexOffset: 0 })
-      .addTo(map)
-      .bindPopup(popup, { maxWidth: 300, minWidth: 280 });
-    marker.on('click', () => selectPlace(p.id));
-    // Update visited button state whenever popup opens
+    // Update visited button state whenever popup opens (desktop)
     marker.on('popupopen', () => {
       const btn = document.getElementById('visited-btn-' + p.id);
       if (btn) {
@@ -740,6 +956,7 @@ function init() {
 
   // Map click to set home base when in "Set Base" mode
   map.on('click', function(e) {
+    closeMapControls();
     if (!settingHomeBase) return;
     setHomeBase(e.latlng.lat, e.latlng.lng, 'Custom Location');
     homeBaseMarker.setLatLng(e.latlng);
@@ -761,23 +978,25 @@ function init() {
     const toast = document.createElement('div');
     toast.id = 'base-hint';
     toast.innerHTML = '📍 <strong>Tip:</strong> Tap any hotel and "Set as Base" to get walking distances from your stay.';
-    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    const isMobileNow = isMobile();
     toast.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);background:rgba(26,58,92,0.97);color:#fff;padding:12px 20px;border-radius:12px;font-size:13px;font-family:DM Sans,sans-serif;z-index:2000;max-width:420px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.3);cursor:pointer;'
-      + (isMobile ? 'top:52px;bottom:auto;max-width:calc(100vw - 32px);' : 'bottom:24px;backdrop-filter:blur(8px);');
+      + (isMobileNow ? 'top:52px;bottom:auto;max-width:calc(100vw - 32px);' : 'bottom:24px;backdrop-filter:blur(8px);');
     toast.onclick = () => toast.remove();
     document.body.appendChild(toast);
     setTimeout(() => { if (toast.parentNode) toast.style.opacity = '0'; toast.style.transition = 'opacity 0.5s'; setTimeout(() => toast.remove(), 600); }, 8000);
   }
 
-  // Mobile setup
-  if (window.matchMedia('(max-width: 768px)').matches) {
-    const sidebar = document.getElementById('sidebar');
-    const handle = sidebar.querySelector('.mobile-handle');
+  // Auto-collapse detail sheet on map drag
+  map.on('movestart', function() {
+    if (isMobile() && sheetState === 'detail') {
+      closeMobileDetail();
+    }
+  });
 
-    // Start collapsed on mobile so map tiles render fully
-    sidebarOpen = false;
-    sidebar.classList.add('collapsed');
-    sidebar.classList.remove('expanded');
+  // Mobile setup
+  if (isMobile()) {
+    // Start in collapsed peek state
+    setSheetState('collapsed');
 
     // After map is ready, force a resize
     setTimeout(() => {
@@ -785,24 +1004,24 @@ function init() {
       map.setView([50.445, 30.523], 14);
     }, 200);
 
-    // Swipe gestures on handle
-    let touchStartY = 0;
-    handle.addEventListener('touchstart', e => {
-      touchStartY = e.touches[0].clientY;
-    }, { passive: true });
-
-    handle.addEventListener('touchend', e => {
-      const dy = e.changedTouches[0].clientY - touchStartY;
-      if (Math.abs(dy) < 20) {
-        // Short tap — toggle
-        toggleSidebar();
-      } else if (dy > 40 && sidebarOpen) {
-        toggleSidebar(); // swipe down → collapse
-      } else if (dy < -40 && !sidebarOpen) {
-        toggleSidebar(); // swipe up → expand
-      }
-    }, { passive: true });
+    // Initialize draggable bottom sheet
+    initMobileSheet();
   }
+
+  // Re-render pins on orientation/resize change (mobile ↔ desktop)
+  mobileQuery.addEventListener('change', () => {
+    const mobile = isMobile();
+    places.forEach(p => {
+      if (markers[p.id]) {
+        markers[p.id].setIcon(createPinIcon(p, { simple: mobile, visited: visited.has(p.id) }));
+        if (mobile) {
+          markers[p.id].unbindPopup();
+        } else {
+          markers[p.id].bindPopup(buildPopupHtml(p), { maxWidth: 300, minWidth: 280 });
+        }
+      }
+    });
+  });
 }
 // ── Second script block ──
 // Robust script loader with fallback CDN and error display

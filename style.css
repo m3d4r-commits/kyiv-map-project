@@ -624,6 +624,7 @@
   }
 
   /* Top controls */
+  .map-ctrl-toggle { display: none; }
   .map-controls {
     position: absolute;
     top: 16px;
@@ -788,10 +789,10 @@
       z-index: 1000;
       width: 100vw;
       min-width: 100vw;
-      height: 55vh;
-      height: 55dvh;
-      max-height: 55vh;
-      max-height: 55dvh;
+      height: 85vh;
+      height: 85dvh;
+      max-height: 85vh;
+      max-height: 85dvh;
       bottom: 0;
       left: 0;
       top: auto;
@@ -801,45 +802,97 @@
       /* Reset desktop collapse styles */
       margin-left: 0 !important;
       opacity: 1 !important;
-      /* Start collapsed so sidebar doesn't flash full-height before JS runs */
-      transform: translateY(calc(100% - 52px));
+      /* Start collapsed (peek) so sidebar doesn't flash full-height before JS runs */
+      transform: translateY(calc(100% - 190px));
     }
 
-    /* Sidebar starts collapsed via CSS; .collapsed keeps it there */
-    #sidebar.collapsed {
+    /* Sheet hidden — handle only */
+    #sidebar.sheet-hidden {
       transform: translateY(calc(100% - 52px));
       pointer-events: auto;
     }
 
-    /* Expanded = JS has opened it, reset transform */
-    #sidebar.expanded {
+    /* Sheet collapsed — peek showing 2-3 list items */
+    #sidebar.sheet-collapsed {
+      transform: translateY(calc(100% - 190px));
+      pointer-events: auto;
+    }
+
+    /* Sheet open — full list */
+    #sidebar.sheet-open {
       transform: translateY(0);
     }
 
-    /* Content hidden by default (sidebar starts collapsed via CSS) */
-    #sidebar #sidebar-header,
-    #sidebar #search-sort,
-    #sidebar #filter-tabs,
-    #sidebar #itinerary-bar,
-    #sidebar #itinerary-summary,
-    #sidebar #place-list {
-      pointer-events: none;
-      visibility: hidden;
+    /* Sheet detail — place detail at ~60vh */
+    #sidebar.sheet-detail {
+      transform: translateY(calc(100% - 60vh));
     }
 
-    /* Peek bar always interactive when collapsed */
-    #sidebar.collapsed .mobile-handle { pointer-events: auto; }
+    /* Disable CSS transition during active drag */
+    #sidebar.sheet-dragging {
+      transition: none !important;
+    }
 
-    /* Un-hide when expanded */
-    #sidebar.expanded #sidebar-header,
-    #sidebar.expanded #search-sort,
-    #sidebar.expanded #filter-tabs,
-    #sidebar.expanded #itinerary-bar,
-    #sidebar.expanded #itinerary-summary,
-    #sidebar.expanded #place-list {
+    /* In collapsed peek, hide header/search/filters but show list (overflow hidden) */
+    #sidebar.sheet-collapsed #sidebar-header,
+    #sidebar.sheet-collapsed #search-sort,
+    #sidebar.sheet-collapsed #filter-tabs,
+    #sidebar.sheet-collapsed #itinerary-bar,
+    #sidebar.sheet-collapsed #itinerary-summary {
+      display: none;
+    }
+    #sidebar.sheet-collapsed #place-list {
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    /* In hidden state, hide all content */
+    #sidebar.sheet-hidden #sidebar-header,
+    #sidebar.sheet-hidden #search-sort,
+    #sidebar.sheet-hidden #filter-tabs,
+    #sidebar.sheet-hidden #itinerary-bar,
+    #sidebar.sheet-hidden #itinerary-summary,
+    #sidebar.sheet-hidden #place-list,
+    #sidebar.sheet-hidden #detail-sheet {
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    /* Handle always interactive */
+    #sidebar .mobile-handle { pointer-events: auto; }
+
+    /* In open state, everything visible */
+    #sidebar.sheet-open #sidebar-header,
+    #sidebar.sheet-open #search-sort,
+    #sidebar.sheet-open #filter-tabs,
+    #sidebar.sheet-open #itinerary-bar,
+    #sidebar.sheet-open #itinerary-summary,
+    #sidebar.sheet-open #place-list {
       visibility: visible;
       pointer-events: auto;
     }
+    #sidebar.sheet-open #place-list {
+      overflow-y: auto;
+    }
+    #sidebar.sheet-open #detail-sheet { display: none; }
+
+    /* In detail state, hide list elements, show detail */
+    #sidebar.sheet-detail #sidebar-header,
+    #sidebar.sheet-detail #search-sort,
+    #sidebar.sheet-detail #filter-tabs,
+    #sidebar.sheet-detail #itinerary-bar,
+    #sidebar.sheet-detail #itinerary-summary,
+    #sidebar.sheet-detail #place-list {
+      display: none;
+    }
+    #sidebar.sheet-detail #detail-sheet {
+      display: block;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    /* In collapsed state, hide detail */
+    #sidebar.sheet-collapsed #detail-sheet { display: none; }
 
     .mobile-handle {
       display: flex !important;
@@ -856,6 +909,37 @@
       background: rgba(255,255,255,0.35);
       border-radius: 3px;
     }
+
+    /* Suppress Leaflet popups on mobile — detail sheet replaces them */
+    .leaflet-popup { display: none !important; }
+
+    /* Detail sheet inside sidebar */
+    #detail-sheet {
+      display: none;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 0 0 80px;
+      flex: 1;
+    }
+    #detail-sheet .detail-back {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: none;
+      border: none;
+      color: var(--gold-light);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #detail-sheet .popup-header-img { height: 100px; border-radius: 0; }
+    #detail-sheet .popup-body { padding: 16px; }
+    #detail-sheet .popup-name { font-size: 20px; }
+    #detail-sheet .popup-actions { flex-wrap: wrap; }
+    #detail-sheet .popup-action-btn { min-height: 44px; font-size: 12px; }
 
     #sidebar-toggle { display: none !important; }
 
@@ -902,13 +986,40 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* Map controls */
+    /* Map controls — collapsed behind toggle on mobile */
     .map-controls {
       position: fixed;
       top: 12px;
       right: 12px;
       z-index: 1001;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
       gap: 6px;
+    }
+    .map-ctrl-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--navy);
+      color: var(--gold);
+      border: 1px solid rgba(201,168,76,0.4);
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+      -webkit-tap-highlight-color: transparent;
+      z-index: 1;
+    }
+    .map-ctrl-group {
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .map-ctrl-group.open {
+      display: flex;
     }
     .map-ctrl-btn {
       padding: 8px 10px;
@@ -975,14 +1086,20 @@
     /* Zoom controls: above collapsed sidebar peek, shift up when expanded */
     .leaflet-control-zoom {
       position: fixed !important;
-      bottom: 64px !important;
+      bottom: 200px !important;
       right: 12px !important;
       margin: 0 !important;
       z-index: 1001;
       transition: bottom 0.35s cubic-bezier(0.4,0,0.2,1);
     }
-    body.sidebar-open .leaflet-control-zoom {
-      bottom: calc(55dvh + 12px) !important;
+    body.sheet-state-hidden .leaflet-control-zoom {
+      bottom: 64px !important;
+    }
+    body.sheet-state-open .leaflet-control-zoom {
+      bottom: calc(85dvh + 12px) !important;
+    }
+    body.sheet-state-detail .leaflet-control-zoom {
+      bottom: calc(60dvh + 12px) !important;
     }
     .leaflet-control-zoom a {
       width: 44px !important;
@@ -994,14 +1111,10 @@
 
   /* ── Extra small phones (iPhone SE, etc.) ── */
   @media (max-width: 375px) {
-    #sidebar { height: 50vh; height: 50dvh; max-height: 50vh; max-height: 50dvh; }
     #sidebar-header h1 { font-size: 18px; }
     .map-ctrl-btn { padding: 6px 8px; font-size: 10px; }
     #legend { display: none; }
     .popup-action-btn { font-size: 10px; padding: 8px 6px; }
-    body.sidebar-open .leaflet-control-zoom {
-      bottom: calc(50dvh + 12px) !important;
-    }
   }
 
   /* iOS safe area padding */
@@ -1133,3 +1246,27 @@
     border: 1px solid rgba(139,92,246,0.25);
   }
   .dark-map .btn-base:hover { background: rgba(139,92,246,0.2); }
+
+  /* Star / Pin feature */
+  .btn-star {
+    background: rgba(201,168,76,0.1);
+    color: var(--gold);
+    border: 1px solid rgba(201,168,76,0.2);
+  }
+  .btn-star:hover { background: rgba(201,168,76,0.2); }
+  .dark-map .btn-star {
+    background: rgba(201,168,76,0.12);
+    color: var(--gold-light);
+    border-color: rgba(201,168,76,0.25);
+  }
+  .dark-map .btn-star:hover { background: rgba(201,168,76,0.2); }
+
+  .starred-badge {
+    position: absolute;
+    right: 68px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gold);
+    font-size: 16px;
+    line-height: 1;
+  }
