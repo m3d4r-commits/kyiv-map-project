@@ -126,17 +126,16 @@ function createPinIcon(place, opts) {
   const isActive = opts.active || false;
   const simple = opts.simple || false;
   const color = place.type === 'hotel' ? '#8B5CF6' : place.type === 'restaurant' ? '#C9A84C' : '#2E6EA6';
-  const markerSize = simple && !isActive ? 24 : 34;
-  const fontSize = simple && !isActive ? 10 : 14;
+  const compact = simple && !isActive;
+  const markerSize = compact ? 28 : 34;
+  const fontSize = compact ? 11 : 14;
+  const borderW = compact ? '2px' : '2.5px';
   const opacity = isVisited ? 'opacity:0.35;' : '';
   const bg = isVisited ? 'background:#888;' : 'background:' + color + ';';
-  const showEmoji = !simple || isActive;
-  const emojiHtml = showEmoji
-    ? '<span style="transform:rotate(45deg);font-size:' + fontSize + 'px;line-height:1;' + (isVisited ? 'filter:grayscale(1);' : '') + '">' + place.emoji + '</span>'
-    : '';
+  const emojiHtml = '<span style="transform:rotate(45deg);font-size:' + fontSize + 'px;line-height:1;' + (isVisited ? 'filter:grayscale(1);' : '') + '">' + place.emoji + '</span>';
 
   return L.divIcon({
-    html: '<div style="width:' + markerSize + 'px;height:' + markerSize + 'px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);' + bg + 'border:2.5px solid rgba(255,255,255,0.95);box-shadow:0 3px 14px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;position:relative;' + opacity + '">' + emojiHtml + '</div>',
+    html: '<div style="width:' + markerSize + 'px;height:' + markerSize + 'px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);' + bg + 'border:' + borderW + ' solid rgba(255,255,255,0.95);box-shadow:0 3px 14px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;position:relative;' + opacity + '">' + emojiHtml + '</div>',
     className: '', iconSize: [markerSize, markerSize], iconAnchor: [markerSize/2, markerSize], popupAnchor: [0, -42]
   });
 }
