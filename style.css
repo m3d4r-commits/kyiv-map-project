@@ -972,13 +972,17 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* Zoom controls: above collapsed sidebar peek */
+    /* Zoom controls: above collapsed sidebar peek, shift up when expanded */
     .leaflet-control-zoom {
       position: fixed !important;
       bottom: 64px !important;
       right: 12px !important;
       margin: 0 !important;
       z-index: 1001;
+      transition: bottom 0.35s cubic-bezier(0.4,0,0.2,1);
+    }
+    body.sidebar-open .leaflet-control-zoom {
+      bottom: calc(55dvh + 12px) !important;
     }
     .leaflet-control-zoom a {
       width: 44px !important;
@@ -995,6 +999,9 @@
     .map-ctrl-btn { padding: 6px 8px; font-size: 10px; }
     #legend { display: none; }
     .popup-action-btn { font-size: 10px; padding: 8px 6px; }
+    body.sidebar-open .leaflet-control-zoom {
+      bottom: calc(50dvh + 12px) !important;
+    }
   }
 
   /* iOS safe area padding */

@@ -79,6 +79,7 @@ function toggleSidebar() {
   const sb = document.getElementById('sidebar');
   sb.classList.toggle('collapsed', !sidebarOpen);
   sb.classList.toggle('expanded', sidebarOpen);
+  document.body.classList.toggle('sidebar-open', sidebarOpen);
   const toggleIcon = document.getElementById('toggle-icon');
   const toggleLabel = document.getElementById('toggle-label');
   if (toggleIcon) toggleIcon.textContent = sidebarOpen ? '✕' : '☰';
