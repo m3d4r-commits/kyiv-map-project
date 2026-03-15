@@ -1045,8 +1045,8 @@
     /* Route info bar */
     .route-info-box {
       position: fixed !important;
-      bottom: auto !important;
-      top: 52px;
+      top: auto !important;
+      bottom: 210px;
       left: 12px;
       right: 12px;
       transform: none;
@@ -1239,6 +1239,29 @@
     background: rgba(42,138,74,0.12);
     color: #6ee7a0;
   }
+
+  /* Set as Base — primary CTA (first time) */
+  .popup-base-cta {
+    margin-bottom: 10px;
+  }
+  .btn-base-primary {
+    width: 100%;
+    padding: 12px 16px;
+    background: #8B5CF6;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-base-primary:hover { background: #7c3aed; }
+  .dark-map .btn-base-primary {
+    background: #7c3aed;
+  }
+  .dark-map .btn-base-primary:hover { background: #6d28d9; }
 
   .dark-map .btn-base {
     background: rgba(139,92,246,0.12);

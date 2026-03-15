@@ -152,11 +152,16 @@ function buildPopupHtml(p) {
     : p.uah === 'Free'
     ? '<div class="popup-free-badge">✓ Free entry</div>'
     : '<div class="popup-prices"><div class="popup-price-chip"><div class="currency">' + (p.type==='sight'?'Entry UAH':p.type==='hotel'?'Per night':'UAH / person') + '</div><div class="amount">' + p.uah + '</div></div><div class="popup-price-chip"><div class="currency">EUR</div><div class="amount">' + p.eur + '</div></div><div class="popup-price-chip"><div class="currency">GBP</div><div class="amount">' + p.gbp + '</div></div></div>';
-  const setBaseBtn = p.type === 'hotel'
-    ? '<button class="popup-action-btn btn-base" onclick="setHomeBase(' + p.lat + ',' + p.lng + ',\'' + p.name.replace(/'/g, "\\'") + '\');if(homeBaseMarker&&map)homeBaseMarker.setLatLng([' + p.lat + ',' + p.lng + ']);">📍 Set as Base</button>'
+  const setBaseOnclick = 'setHomeBase(' + p.lat + ',' + p.lng + ',\'' + p.name.replace(/'/g, "\\'") + '\');if(homeBaseMarker&&map)homeBaseMarker.setLatLng([' + p.lat + ',' + p.lng + ']);';
+  const isFirstBase = p.type === 'hotel' && !homeBaseSet;
+  const setBaseBtn = p.type === 'hotel' && !isFirstBase
+    ? '<button class="popup-action-btn btn-base" onclick="' + setBaseOnclick + '">📍 Set as Base</button>'
+    : '';
+  const setBasePrimary = isFirstBase
+    ? '<div class="popup-base-cta"><button class="btn-base-primary" onclick="' + setBaseOnclick + '">📍 Set as Your Base</button></div>'
     : '';
   const starBtn = '<button id="star-btn-' + p.id + '" class="popup-action-btn btn-star" onclick="toggleStar(' + p.id + ')">' + (starredId === p.id ? '★ Starred' : '☆ Star') + '</button>';
-  const actionsHtml = '<div class="popup-actions">' +
+  const actionsHtml = setBasePrimary + '<div class="popup-actions">' +
     '<button class="popup-action-btn btn-directions" onclick="event.stopPropagation();window.open(\'' + gmapsUrl(p) + '\',\'_blank\')">🧭 Google Maps</button>' +
     '<button class="popup-action-btn btn-itinerary" onclick="addToItinerary(' + p.id + ')">📋 Route</button>' +
     '<button id="visited-btn-' + p.id + '" class="popup-action-btn btn-visited" onclick="toggleVisited(' + p.id + ')">' + (visited.has(p.id) ? '✓ Visited' : '☐ Visited') + '</button>' +
@@ -854,6 +859,32 @@ function setHomeBase(lat, lng, name) {
   settingHomeBase = false;
   const btn = document.getElementById('set-homebase-btn');
   if (btn) { btn.classList.remove('active'); btn.textContent = '📍 Set Base'; }
+  const resetBtn = document.getElementById('reset-base-btn');
+  if (resetBtn) resetBtn.style.display = '';
+}
+
+function resetHomeBase() {
+  homeBaseSet = false;
+  hotelsHidden = false;
+  homeBase = { lat: 50.4505, lng: 30.5230, name: 'City Center' };
+  // Re-add hotel markers to map
+  if (map) {
+    places.filter(p => p.type === 'hotel').forEach(p => {
+      if (markers[p.id] && !map.hasLayer(markers[p.id])) map.addLayer(markers[p.id]);
+    });
+  }
+  // Clear walk distances
+  places.forEach(p => { p.walk = ''; p.walkKm = null; });
+  // Reset homeBaseMarker to default position
+  if (homeBaseMarker) homeBaseMarker.setLatLng([50.4505, 30.5230]);
+  // Update label
+  const label = document.getElementById('homebase-label');
+  if (label) label.textContent = '📍 My Base';
+  // Hide reset button
+  const resetBtn = document.getElementById('reset-base-btn');
+  if (resetBtn) resetBtn.style.display = 'none';
+  renderList();
+  applyFilters();
 }
 
 function toggleSetHomeBase() {
