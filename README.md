@@ -14,10 +14,11 @@ The page presents a two-panel layout: a collapsible sidebar on the left and a li
 
 | Type | Count | Colour |
 |---|---|---|
-| Your Hotel (base) | 1 | 🟣 Violet |
 | Hotels | 16 | 🟣 Violet |
 | Restaurants | 9 | 🟡 Gold |
-| Sights & Attractions | 8 | 🔵 Blue |
+| Sights & Attractions | 9 | 🔵 Blue |
+
+A draggable 🟣 base marker shows your current location (defaults to city centre). It is not a data entry — use the 📍 Set Base or ◎ GPS buttons to reposition it.
 
 Itinerary routes are drawn in 🟢 Green when active.
 
@@ -59,6 +60,12 @@ On mobile (≤768 px) the sidebar slides up from the bottom with a drag handle. 
 | `style.css` | All styles (sidebar, map, popups, responsive) |
 | `app.js` | Application logic (data, map, routing, filtering) |
 | `validation-report.md` | Audit of all 34 locations — GPS accuracy, hours, prices, URLs, and factual claims |
+| `favicon.ico` | Browser tab icon |
+| `favicon-16x16.png` | 16×16 PNG favicon |
+| `favicon-32x32.png` | 32×32 PNG favicon |
+| `apple-touch-icon.png` | iOS home-screen icon |
+| `android-chrome-192x192.png` | Android home-screen icon (192 px) |
+| `android-chrome-512x512.png` | Android home-screen icon (512 px) |
 | `README.md` | This file |
 
 ## Usage
