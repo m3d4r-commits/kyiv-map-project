@@ -46,7 +46,7 @@ let itineraryMode = false;
 let itinerary = []; // ordered list of place ids
 let visited = new Set(); // ids of visited places
 let routeLines = [];
-let currentMapStyle = 0;
+let currentMapStyle = 1;
 let homeBase = { lat: 50.4505, lng: 30.5230, name: 'City Center' };
 let homeBaseMarker = null;
 let settingHomeBase = false;
@@ -60,6 +60,19 @@ const tileLayers = [
 ];
 
 let activeTileLayer;
+
+function isMapDark() {
+  const tl = tileLayers[currentMapStyle];
+  return tl.name === 'Dark' || tl.name === 'Satellite';
+}
+
+function getRouteColor() {
+  return isMapDark() ? '#34d399' : '#15803d';
+}
+
+function getRouteDashColor() {
+  return isMapDark() ? '#fff' : '#000';
+}
 
 function toggleSidebar() {
   sidebarOpen = !sidebarOpen;
@@ -81,6 +94,18 @@ function cycleMapStyle() {
   if (activeTileLayer) map.removeLayer(activeTileLayer);
   activeTileLayer = L.tileLayer(tl.url, { attribution:'© OpenStreetMap', maxZoom:19 }).addTo(map);
   document.getElementById('style-btn').textContent = '🗺 ' + tl.name;
+  // Dark popup theme for Dark & Satellite tiles
+  document.body.classList.toggle('dark-map', isMapDark());
+  // Update route line colors for new tile style
+  const rc = getRouteColor();
+  const dc = getRouteDashColor();
+  routeLines.forEach(l => {
+    if (l.setStyle) {
+      const opts = l.options;
+      if (opts.dashArray) l.setStyle({ color: dc });
+      else l.setStyle({ color: rc });
+    }
+  });
 }
 
 function fitAllMarkers() {
@@ -241,14 +266,14 @@ async function drawRouteTo(place) {
 
   const result = await fetchWalkingRoute(hotel, place);
   const line = L.polyline(result.coords, {
-    color: '#2a8a4a', weight: 4, opacity: 0.85,
+    color: getRouteColor(), weight: 4, opacity: 0.85,
     lineCap: 'round', lineJoin: 'round'
   }).addTo(map);
   routeLines.push(line);
 
   // Animated dash effect overlay
   const dashLine = L.polyline(result.coords, {
-    color: '#fff', weight: 2, opacity: 0.4,
+    color: getRouteDashColor(), weight: 2, opacity: 0.4,
     dashArray: '6,12', lineCap: 'round'
   }).addTo(map);
   routeLines.push(dashLine);
@@ -351,14 +376,14 @@ async function drawItineraryRoute() {
 
     // Draw the full route line
     const line = L.polyline(multiResult.coords, {
-      color: '#2a8a4a', weight: 4.5, opacity: 0.85,
+      color: getRouteColor(), weight: 4.5, opacity: 0.85,
       lineCap: 'round', lineJoin: 'round'
     }).addTo(map);
     routeLines.push(line);
 
     // White dash overlay
     const dashLine = L.polyline(multiResult.coords, {
-      color: '#fff', weight: 2, opacity: 0.35,
+      color: getRouteDashColor(), weight: 2, opacity: 0.35,
       dashArray: '6,14', lineCap: 'round'
     }).addTo(map);
     routeLines.push(dashLine);
@@ -370,7 +395,7 @@ async function drawItineraryRoute() {
       const segKm = haversine(a.lat, a.lng, b.lat, b.lng);
       totalKm += segKm;
       const line = L.polyline([[a.lat, a.lng], [b.lat, b.lng]], {
-        color: '#2a8a4a', weight: 4, opacity: 0.85
+        color: getRouteColor(), weight: 4, opacity: 0.85
       }).addTo(map);
       routeLines.push(line);
     }
@@ -381,7 +406,7 @@ async function drawItineraryRoute() {
   for (let i = 1; i < stops.length; i++) {
     const s = stops[i];
     const numIcon = L.divIcon({
-      html: '<div style="width:22px;height:22px;border-radius:50%;background:#2a8a4a;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2.5px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.35);">' + i + '</div>',
+      html: '<div style="width:22px;height:22px;border-radius:50%;background:' + getRouteColor() + ';color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2.5px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.35);">' + i + '</div>',
       className: '', iconSize: [22,22], iconAnchor: [11,11]
     });
     const numMarker = L.marker([s.lat, s.lng], { icon: numIcon, zIndexOffset: 2000 }).addTo(map);
@@ -620,9 +645,10 @@ function init() {
   // tap:false is required for modern mobile Chrome/Samsung Internet — they handle touch natively
   // tap:true causes double-fire on Android Chromium
   map = L.map('map', { zoomControl: false, tap: false }).setView([50.445, 30.523], 14);
-  activeTileLayer = L.tileLayer(tileLayers[0].url, {
+  activeTileLayer = L.tileLayer(tileLayers[1].url, {
     attribution: '© OpenStreetMap contributors © CARTO', maxZoom: 19
   }).addTo(map);
+  document.body.classList.add('dark-map');
   L.control.zoom({ position: 'bottomright' }).addTo(map);
 
   // Force map to recalculate size after a beat (fixes blank map on mobile)
@@ -641,17 +667,17 @@ function init() {
     });
 
     const walkHtml = p.walk
-      ? '<div style="background:rgba(139,92,246,0.08);border-radius:8px;padding:7px 12px;margin-bottom:8px;font-size:12px;color:#8B5CF6;font-weight:500;display:flex;align-items:center;gap:6px;">🚶 ' + p.walk + ' from base</div>'
+      ? '<div class="popup-walk-badge">🚶 ' + p.walk + ' from base</div>'
       : '';
 
     const hoursHtml = p.hours
-      ? '<div style="font-size:11px;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:4px;">🕐 ' + p.hours + '</div>'
+      ? '<div class="popup-hours">🕐 ' + p.hours + '</div>'
       : '';
 
     const pricesHtml = p.uah === '—' || !p.uah
       ? ''
       : p.uah === 'Free'
-      ? '<div style="background:#f0f7f0;border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:12px;color:#2a6e2a;font-weight:500;">✓ Free entry</div>'
+      ? '<div class="popup-free-badge">✓ Free entry</div>'
       : '<div class="popup-prices"><div class="popup-price-chip"><div class="currency">' + (p.type==='sight'?'Entry UAH':p.type==='hotel'?'Per night':'UAH / person') + '</div><div class="amount">' + p.uah + '</div></div><div class="popup-price-chip"><div class="currency">EUR</div><div class="amount">' + p.eur + '</div></div><div class="popup-price-chip"><div class="currency">GBP</div><div class="amount">' + p.gbp + '</div></div></div>';
 
     const setBaseBtn = p.type === 'hotel'
