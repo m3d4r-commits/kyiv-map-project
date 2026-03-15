@@ -931,7 +931,7 @@ function init() {
 
   // tap:false is required for modern mobile Chrome/Samsung Internet — they handle touch natively
   // tap:true causes double-fire on Android Chromium
-  map = L.map('map', { zoomControl: false, tap: false }).setView([50.445, 30.523], 14);
+  map = L.map('map', { zoomControl: false, tap: false }).setView([50.445, 30.523], 10);
   activeTileLayer = L.tileLayer(tileLayers[0].url, {
     attribution: '© OpenStreetMap contributors © CARTO', maxZoom: 19
   }).addTo(map);
@@ -999,6 +999,7 @@ function init() {
     homeBaseMarker.setLatLng(e.latlng);
   });
 
+  fitAllMarkers();
   renderList();
 
   // Keyboard shortcut: Escape to close sidebar
