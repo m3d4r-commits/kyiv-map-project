@@ -1,6 +1,8 @@
 # kyiv-map-project
 
-An interactive, single-file travel guide for Kyiv built with [Leaflet.js](https://leafletjs.com/). Open `index.html` directly in any modern browser — no server or build step required.
+An interactive travel guide for Kyiv built with [Leaflet.js](https://leafletjs.com/). Open `index.html` directly in any modern browser — no server or build step required.
+
+**[Live Demo →](https://m3d4r-commits.github.io/kyiv-map-project/)**
 
 ## What it does
 
@@ -12,8 +14,8 @@ The page presents a two-panel layout: a collapsible sidebar on the left and a li
 
 | Type | Count | Colour |
 |---|---|---|
-| Your Hotel (base) | 1 | 🔴 Red |
-| Hotels | 16 | 🔴 Red |
+| Your Hotel (base) | 1 | 🟣 Violet |
+| Hotels | 16 | 🟣 Violet |
 | Restaurants | 9 | 🟡 Gold |
 | Sights & Attractions | 8 | 🔵 Blue |
 
@@ -53,7 +55,9 @@ On mobile (≤768 px) the sidebar slides up from the bottom with a drag handle. 
 
 | File | Description |
 |---|---|
-| `index.html` | The complete self-contained application (HTML + CSS + JS) |
+| `index.html` | Page structure and layout |
+| `style.css` | All styles (sidebar, map, popups, responsive) |
+| `app.js` | Application logic (data, map, routing, filtering) |
 | `validation-report.md` | Audit of all 34 locations — GPS accuracy, hours, prices, URLs, and factual claims |
 | `README.md` | This file |
 

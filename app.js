@@ -17,7 +17,7 @@ const places = [
   { id:16, type:'sight',      emoji:'🏛', name:'Independence Square (Maidan)',           cuisine:'Historic Square',           uah:'Free',      eur:'Free',     gbp:'Free',     note:'Central hub of Kyiv. Site of the 2014 revolution. Symbolic to all Ukrainians.', lat:50.4505318, lng:30.5229899, walk:'11 min · 0.9 km', walkKm:0.9, headerGrad:'linear-gradient(135deg,#F57F17,#FFD54F)', hours:'All day', url:'https://guide.kyivcity.gov.ua/en/places/maydanu-nezalezhnosti' },
   { id:17, type:'sight',      emoji:'🏡', name:'Pyrohiv Open-Air Museum',                cuisine:'Folk Architecture Museum',  uah:'130',       eur:'~€2.60',   gbp:'~£2.20',   note:'Largest open-air museum in Ukraine. 300+ traditional structures from 16th–20th century villages across all regions. Plan 3–4 hours. Closed Wednesdays.', lat:50.3545, lng:30.5122, walk:'Far · ~11 km (taxi/bus)', walkKm:11.0, headerGrad:'linear-gradient(135deg,#2E7D32,#66BB6A)', hours:'09:00–18:00 (closed Wed)', url:'https://www.pyrohiv.com/' },
   // Hotels
-  { id:18, type:'hotel', emoji:'🏨', name:'Sofiivska St 19',                     cuisine:'Boutique Hotel',         uah:'~2,500–4,000', eur:'~€50–80', gbp:'~£50–85',  note:'In the heart of old Kyiv, steps from St. Sophia\'s Cathedral and Mykhailivska Square.', lat:50.4520, lng:30.5181, walk:'1 min · next door', walkKm:0.05, headerGrad:'linear-gradient(135deg,#D4534B,#e8857f)', hours:'24h', url:null },
+  { id:18, type:'hotel', emoji:'🏨', name:'Sofiivska St 19',                     cuisine:'Boutique Hotel',         uah:'~2,500–4,000', eur:'~€50–80', gbp:'~£50–85',  note:'In the heart of old Kyiv, steps from St. Sophia\'s Cathedral and Mykhailivska Square.', lat:50.4520, lng:30.5181, walk:'1 min · next door', walkKm:0.05, headerGrad:'linear-gradient(135deg,#8B5CF6,#e8857f)', hours:'24h', url:null },
   { id:19, type:'hotel', emoji:'🏨', name:'InterContinental Kyiv',               cuisine:'5★ Luxury',              uah:'~8,000–15,000', eur:'~€160–300', gbp:'~£160–310', note:'272 rooms. Four restaurants, rooftop lounge, indoor pool, spa. Panoramic views of golden-domed city center. Favored by ambassadors since 2009.', lat:50.4557, lng:30.5192, walk:'5 min · 0.5 km', walkKm:0.5, headerGrad:'linear-gradient(135deg,#8B6914,#C9A84C)', hours:'24h', url:'https://www.ihg.com/intercontinental/hotels/us/en/kiev/kbpha/hoteldetail' },
   { id:20, type:'hotel', emoji:'🏨', name:'Fairmont Grand Hotel Kyiv',           cuisine:'5★ Luxury',              uah:'~7,000–14,000', eur:'~€140–280', gbp:'~£145–290', note:'133 rooms starting at 40 sq m — most spacious in the city. 205 sq m Royal Residence. Marigold restaurant, Elixir SPA. Weekly classical concerts.', lat:50.4603, lng:30.5254, walk:'14 min · 1.3 km', walkKm:1.3, headerGrad:'linear-gradient(135deg,#8B6914,#C9A84C)', hours:'24h', url:'https://www.fairmont.com/en/hotels/kyiv/fairmont-grand-hotel-kyiv.html' },
   { id:21, type:'hotel', emoji:'🏨', name:'Hyatt Regency Kyiv',                  cuisine:'5★ Luxury',              uah:'~6,500–12,000', eur:'~€130–240', gbp:'~£135–250', note:'234 rooms overlooking Old City. Grill Asia (Wine Spectator Award), rooftop Bar on 8, 20m indoor pool, full spa. 5 min to Maidan.', lat:50.4532, lng:30.5185, walk:'4 min · 0.4 km', walkKm:0.4, headerGrad:'linear-gradient(135deg,#8B6914,#C9A84C)', hours:'24h', url:'https://www.hyatt.com/hyatt-regency/en-US/kievh-hyatt-regency-kyiv' },
@@ -545,7 +545,7 @@ function updateMarkerStyle(id) {
   const p = places.find(x => x.id === id);
   if (!p) return;
   const isVisited = visited.has(id);
-  const color = p.type === 'hotel' ? '#D4534B' : p.type === 'restaurant' ? '#C9A84C' : '#2E6EA6';
+  const color = p.type === 'hotel' ? '#8B5CF6' : p.type === 'restaurant' ? '#C9A84C' : '#2E6EA6';
   const markerSize = 34;
   const fontSize = 14;
   const opacity = isVisited ? 'opacity:0.35;' : '';
@@ -630,7 +630,7 @@ function init() {
   setTimeout(() => map.invalidateSize(), 500);
 
   places.forEach(p => {
-    const color = p.type === 'hotel' ? '#D4534B' : p.type === 'restaurant' ? '#C9A84C' : '#2E6EA6';
+    const color = p.type === 'hotel' ? '#8B5CF6' : p.type === 'restaurant' ? '#C9A84C' : '#2E6EA6';
     const markerSize = 34;
     const fontSize = 14;
     const pulseHtml = '';
@@ -641,7 +641,7 @@ function init() {
     });
 
     const walkHtml = p.walk
-      ? '<div style="background:rgba(212,83,75,0.08);border-radius:8px;padding:7px 12px;margin-bottom:8px;font-size:12px;color:#D4534B;font-weight:500;display:flex;align-items:center;gap:6px;">🚶 ' + p.walk + ' from base</div>'
+      ? '<div style="background:rgba(139,92,246,0.08);border-radius:8px;padding:7px 12px;margin-bottom:8px;font-size:12px;color:#8B5CF6;font-weight:500;display:flex;align-items:center;gap:6px;">🚶 ' + p.walk + ' from base</div>'
       : '';
 
     const hoursHtml = p.hours
@@ -697,7 +697,7 @@ function init() {
 
   // Home base marker (draggable)
   const hbIcon = L.divIcon({
-    html: '<div style="width:44px;height:44px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#D4534B;border:2.5px solid rgba(255,255,255,0.95);box-shadow:0 3px 14px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;"><span style="transform:rotate(45deg);font-size:20px;line-height:1;">📍</span></div>',
+    html: '<div style="width:44px;height:44px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#8B5CF6;border:2.5px solid rgba(255,255,255,0.95);box-shadow:0 3px 14px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;"><span style="transform:rotate(45deg);font-size:20px;line-height:1;">📍</span></div>',
     className: '', iconSize: [44, 44], iconAnchor: [22, 44], popupAnchor: [0, -42]
   });
   homeBaseMarker = L.marker([homeBase.lat, homeBase.lng], { icon: hbIcon, zIndexOffset: 1000, draggable: true })
