@@ -66,6 +66,8 @@ On mobile (≤768 px) the sidebar slides up from the bottom with a drag handle. 
 | `apple-touch-icon.png` | iOS home-screen icon |
 | `android-chrome-192x192.png` | Android home-screen icon (192 px) |
 | `android-chrome-512x512.png` | Android home-screen icon (512 px) |
+| `LICENSE` | MIT licence |
+| `.gitignore` | Files excluded from version control |
 | `README.md` | This file |
 
 ## Usage
