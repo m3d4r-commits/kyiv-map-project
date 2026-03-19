@@ -39,7 +39,8 @@ const places = [
 // State
 const markers = {};
 let activeItem = null;
-let map, clusterGroup;
+let map;
+const WALK_KM_PER_MIN = 0.08;
 let currentFilter = 'all';
 let currentSort = 'default';
 let sidebarOpen = true;
@@ -66,6 +67,22 @@ const tileLayers = [
 ];
 
 let activeTileLayer;
+
+async function fetchExchangeRates() {
+  try {
+    const resp = await fetch('https://open.er-api.com/v6/latest/UAH');
+    const data = await resp.json();
+    if (data && data.rates) {
+      const gbpRate = Math.round(1 / data.rates.GBP);
+      const eurRate = Math.round(1 / data.rates.EUR);
+      document.getElementById('rate-gbp').textContent = '£1 ≈ ' + gbpRate + ' UAH';
+      document.getElementById('rate-eur').textContent = '€1 ≈ ' + eurRate + ' UAH';
+    }
+  } catch (e) {
+    document.getElementById('rate-gbp').textContent = '£1 ≈ 59 UAH';
+    document.getElementById('rate-eur').textContent = '€1 ≈ 50 UAH';
+  }
+}
 
 function isMapDark() {
   const tl = tileLayers[currentMapStyle];
@@ -427,7 +444,7 @@ async function fetchWalkingRoute(from, to) {
 
   // Last resort: straight line
   const km = haversine(from.lat, from.lng, to.lat, to.lng);
-  return { coords: [[from.lat, from.lng], [to.lat, to.lng]], distanceKm: km, durationMin: Math.round(km / 0.08) };
+  return { coords: [[from.lat, from.lng], [to.lat, to.lng]], distanceKm: km, durationMin: Math.round(km / WALK_KM_PER_MIN) };
 }
 
 async function fetchMultiStopRoute(stops) {
@@ -563,7 +580,7 @@ async function updateItinerarySummary() {
   for (let i = 1; i < routeStops.length; i++) {
     totalKm += haversine(routeStops[i-1].lat, routeStops[i-1].lng, routeStops[i].lat, routeStops[i].lng);
   }
-  const totalMin = Math.round(totalKm / 0.08);
+  const totalMin = Math.round(totalKm / WALK_KM_PER_MIN);
   document.getElementById('itinerary-text').innerHTML = names.join('<br>') +
     '<br><span style="color:var(--gold-light);font-weight:600;margin-top:4px;display:inline-block;">≈ ' +
     totalKm.toFixed(1) + ' km · ~' + totalMin + ' min walking</span>';
@@ -622,7 +639,7 @@ async function drawItineraryRoute() {
       }).addTo(map);
       routeLines.push(line);
     }
-    totalMin = Math.round(totalKm / 0.08);
+    totalMin = Math.round(totalKm / WALK_KM_PER_MIN);
   }
 
   // Number markers at each stop
@@ -756,7 +773,9 @@ function renderList() {
 }
 
 function gmapsUrl(p) {
-  return 'https://www.google.com/maps/dir/?api=1&destination=' + p.lat + ',' + p.lng + '&travelmode=walking';
+  var url = 'https://www.google.com/maps/dir/?api=1&destination=' + p.lat + ',' + p.lng;
+  if (p.type !== 'hotel') url += '&travelmode=walking';
+  return url;
 }
 
 function gmapsItineraryUrl() {
@@ -800,7 +819,7 @@ function toggleVisited(id) {
   const btn = document.getElementById('visited-btn-' + id);
   if (btn) {
     btn.className = 'popup-action-btn btn-visited' + (visited.has(id) ? ' is-visited' : '');
-    btn.textContent = visited.has(id) ? '✓ Visited' : '☐ Mark Visited';
+    btn.textContent = visited.has(id) ? '✓ Visited' : '☐ Visited';
   }
 }
 
@@ -856,7 +875,7 @@ function setHomeBase(lat, lng, name, fromHotel) {
   places.forEach(p => {
     const km = haversine(lat, lng, p.lat, p.lng);
     p.walkKm = Math.round(km * 10) / 10;
-    const mins = Math.round(km / 0.08);
+    const mins = Math.round(km / WALK_KM_PER_MIN);
     p.walk = mins + ' min · ' + p.walkKm.toFixed(1) + ' km';
   });
   // Refresh sidebar
@@ -891,7 +910,6 @@ function resetHomeBase() {
   // Hide reset button
   const resetBtn = document.getElementById('reset-base-btn');
   if (resetBtn) resetBtn.style.display = 'none';
-  renderList();
   applyFilters();
 }
 
@@ -1080,6 +1098,7 @@ function init() {
     clearTimeout(timeout);
     try {
       init();
+      fetchExchangeRates();
       overlay.style.transition = 'opacity 0.4s';
       overlay.style.opacity = '0';
       setTimeout(function() { overlay.style.display = 'none'; }, 500);
