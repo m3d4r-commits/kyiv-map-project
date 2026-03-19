@@ -53,9 +53,7 @@ let itinerary = []; // ordered list of place ids
 let visited = new Set(); // ids of visited places
 let routeLines = [];
 let currentMapStyle = 0;
-let homeBase = { lat: 50.4505, lng: 30.5230, name: 'City Center' };
-let homeBaseMarker = null;
-let settingHomeBase = false;
+let homeBase = null;
 let homeBaseSet = false;
 let hotelsHidden = false;
 let selectedHotelId = null;
@@ -874,10 +872,6 @@ function setHomeBase(lat, lng, name, fromHotel, placeId) {
       });
     }
   }
-  // Update home base marker
-  if (homeBaseMarker && map) {
-    homeBaseMarker.setLatLng([lat, lng]);
-  }
   // Recalculate walk distances for all places
   places.forEach(p => {
     const km = haversine(lat, lng, p.lat, p.lng);
@@ -890,9 +884,6 @@ function setHomeBase(lat, lng, name, fromHotel, placeId) {
   // Update home base label
   const label = document.getElementById('homebase-label');
   if (label) label.textContent = '📍 ' + homeBase.name;
-  settingHomeBase = false;
-  const btn = document.getElementById('set-homebase-btn');
-  if (btn) { btn.classList.remove('active'); btn.textContent = '📍 Set Base'; }
   const resetBtn = document.getElementById('reset-base-btn');
   if (resetBtn) resetBtn.style.display = '';
   // Fit map to show base hotel + all non-hotel places
@@ -916,8 +907,6 @@ function resetHomeBase() {
   }
   // Clear walk distances
   places.forEach(p => { p.walk = ''; p.walkKm = null; });
-  // Reset homeBaseMarker to default position
-  if (homeBaseMarker) homeBaseMarker.setLatLng([50.4505, 30.5230]);
   // Update label
   const label = document.getElementById('homebase-label');
   if (label) label.textContent = '📍 My Base';
@@ -925,15 +914,6 @@ function resetHomeBase() {
   const resetBtn = document.getElementById('reset-base-btn');
   if (resetBtn) resetBtn.style.display = 'none';
   applyFilters();
-}
-
-function toggleSetHomeBase() {
-  settingHomeBase = !settingHomeBase;
-  const btn = document.getElementById('set-homebase-btn');
-  if (btn) {
-    btn.classList.toggle('active', settingHomeBase);
-    btn.textContent = settingHomeBase ? '👆 Tap Map' : '📍 Set Base';
-  }
 }
 
 function detectGPS() {
@@ -1016,27 +996,8 @@ function init() {
     markers[p.id] = marker;
   });
 
-  // Home base marker (draggable)
-  const hbIcon = L.divIcon({
-    html: '<div style="width:44px;height:44px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#8B5CF6;border:2.5px solid rgba(255,255,255,0.95);box-shadow:0 3px 14px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;"><span style="transform:rotate(45deg);font-size:20px;line-height:1;">📍</span></div>',
-    className: '', iconSize: [44, 44], iconAnchor: [22, 44], popupAnchor: [0, -42]
-  });
-  homeBaseMarker = L.marker([homeBase.lat, homeBase.lng], { icon: hbIcon, zIndexOffset: 1000, draggable: true })
-    .addTo(map)
-    .bindPopup('<div style="font-family:DM Sans,sans-serif;text-align:center;padding:4px;"><strong>' + homeBase.name + '</strong><br><span style="font-size:11px;color:#666;">Drag to reposition or tap a hotel → Set as Base</span></div>', { maxWidth: 220 });
-
-  homeBaseMarker.on('dragend', function() {
-    const pos = homeBaseMarker.getLatLng();
-    setHomeBase(pos.lat, pos.lng, 'Custom Location');
-  });
-
-  // Map click to set home base when in "Set Base" mode
-  map.on('click', function(e) {
-    closeMapControls();
-    if (!settingHomeBase) return;
-    setHomeBase(e.latlng.lat, e.latlng.lng, 'Custom Location');
-    homeBaseMarker.setLatLng(e.latlng);
-  });
+  // Close map controls on map click
+  map.on('click', function() { closeMapControls(); });
 
   fitAllMarkers();
   renderList();
