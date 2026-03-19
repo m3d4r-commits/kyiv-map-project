@@ -58,6 +58,7 @@ let homeBaseMarker = null;
 let settingHomeBase = false;
 let homeBaseSet = false;
 let hotelsHidden = false;
+let selectedHotelId = null;
 let starredId = null;
 
 const tileLayers = [
@@ -170,7 +171,7 @@ function buildPopupHtml(p) {
     : p.uah === 'Free'
     ? '<div class="popup-free-badge">✓ Free entry</div>'
     : '<div class="popup-prices"><div class="popup-price-chip"><div class="currency">' + (p.type==='sight'?'Entry UAH':p.type==='hotel'?'Per night':'UAH / person') + '</div><div class="amount">' + p.uah + '</div></div><div class="popup-price-chip"><div class="currency">EUR</div><div class="amount">' + p.eur + '</div></div><div class="popup-price-chip"><div class="currency">GBP</div><div class="amount">' + p.gbp + '</div></div></div>';
-  const setBaseOnclick = 'setHomeBase(' + p.lat + ',' + p.lng + ',\'' + p.name.replace(/'/g, "\\'") + '\',true);';
+  const setBaseOnclick = 'setHomeBase(' + p.lat + ',' + p.lng + ',\'' + p.name.replace(/'/g, "\\'") + '\',true,' + p.id + ');';
   const isFirstBase = p.type === 'hotel' && !homeBaseSet;
   const setBaseBtn = p.type === 'hotel' && !isFirstBase
     ? '<button class="popup-action-btn btn-base" onclick="' + setBaseOnclick + '">📍 Set as Base</button>'
@@ -355,7 +356,11 @@ function cycleMapStyle() {
 
 function fitAllMarkers() {
   if (!map) return;
-  const visible = places.filter(p => currentFilter === 'all' || p.type === currentFilter);
+  const visible = places.filter(p => {
+    if (currentFilter !== 'all' && p.type !== currentFilter) return false;
+    if (hotelsHidden && p.type === 'hotel' && p.id !== selectedHotelId) return false;
+    return true;
+  });
   if (visible.length === 0) return;
   const coords = visible.map(p => [p.lat, p.lng]);
   if (homeBaseSet) coords.push([homeBase.lat, homeBase.lng]);
@@ -696,7 +701,7 @@ function setFilter(type, btn) {
       if (!markers[p.id]) return;
       const shouldShow = (type === 'all' || p.type === type);
       // Respect hotelsHidden unless user explicitly filters to hotels
-      const isHiddenHotel = hotelsHidden && p.type === 'hotel' && type !== 'hotel';
+      const isHiddenHotel = hotelsHidden && p.type === 'hotel' && p.id !== selectedHotelId && type !== 'hotel';
       if (shouldShow && !isHiddenHotel) {
         if (!map.hasLayer(markers[p.id])) markers[p.id].addTo(map);
       } else {
@@ -719,7 +724,7 @@ function renderList() {
   let filtered = places.filter(p => {
     if (currentFilter !== 'all' && p.type !== currentFilter) return false;
     // Hide hotels after base is set (unless user explicitly filters to hotels)
-    if (hotelsHidden && p.type === 'hotel' && currentFilter !== 'hotel') return false;
+    if (hotelsHidden && p.type === 'hotel' && p.id !== selectedHotelId && currentFilter !== 'hotel') return false;
     if (query && !p.name.toLowerCase().includes(query) && !p.cuisine.toLowerCase().includes(query)) return false;
     return true;
   });
@@ -851,18 +856,20 @@ function updateMarkerStyle(id) {
   markers[id].setIcon(icon);
 }
 
-function setHomeBase(lat, lng, name, fromHotel) {
+function setHomeBase(lat, lng, name, fromHotel, placeId) {
   // Close mobile detail sheet before modifying markers
   if (typeof closeMobileDetail === 'function' && mobileDetailPlaceId !== null) {
     closeMobileDetail();
   }
   homeBase = { lat, lng, name: name || 'Your Location' };
   homeBaseSet = true;
+  selectedHotelId = fromHotel ? (placeId || null) : null;
   // Only hide hotel markers when base was set from a hotel popup
   if (fromHotel) {
     hotelsHidden = true;
     if (map) {
       places.filter(p => p.type === 'hotel').forEach(p => {
+        if (p.id === selectedHotelId) return;
         if (markers[p.id] && map.hasLayer(markers[p.id])) map.removeLayer(markers[p.id]);
       });
     }
@@ -888,11 +895,18 @@ function setHomeBase(lat, lng, name, fromHotel) {
   if (btn) { btn.classList.remove('active'); btn.textContent = '📍 Set Base'; }
   const resetBtn = document.getElementById('reset-base-btn');
   if (resetBtn) resetBtn.style.display = '';
+  // Fit map to show base hotel + all non-hotel places
+  if (fromHotel && map) {
+    const coords = places.filter(p => p.type !== 'hotel').map(p => [p.lat, p.lng]);
+    coords.push([lat, lng]);
+    map.fitBounds(L.latLngBounds(coords), { padding: [40, 40] });
+  }
 }
 
 function resetHomeBase() {
   homeBaseSet = false;
   hotelsHidden = false;
+  selectedHotelId = null;
   homeBase = { lat: 50.4505, lng: 30.5230, name: 'City Center' };
   // Re-add hotel markers to map
   if (map) {
