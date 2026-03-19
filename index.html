@@ -62,8 +62,7 @@
   <div class="map-controls">
     <button class="map-ctrl-toggle" id="ctrl-toggle" onclick="toggleMapControls()">☰</button>
     <div class="map-ctrl-group" id="ctrl-group">
-      <button class="map-ctrl-btn" id="homebase-label" onclick="if(homeBaseMarker&&map){map.setView(homeBaseMarker.getLatLng(),16);homeBaseMarker.openPopup();};closeMapControls()">📍 My Base</button>
-      <button class="map-ctrl-btn" id="set-homebase-btn" onclick="toggleSetHomeBase();closeMapControls()">📍 Set Base</button>
+      <button class="map-ctrl-btn" id="homebase-label" onclick="if(homeBase&&map){map.setView([homeBase.lat,homeBase.lng],16);};closeMapControls()">📍 My Base</button>
       <button class="map-ctrl-btn" id="reset-base-btn" onclick="resetHomeBase();closeMapControls()" style="display:none">↩ Reset Base</button>
       <button class="map-ctrl-btn" onclick="detectGPS();closeMapControls()">◎ GPS</button>
       <button class="map-ctrl-btn" onclick="fitAllMarkers();closeMapControls()">⊡ Fit All</button>
