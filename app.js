@@ -186,19 +186,19 @@ function buildPopupHtml(p) {
     : p.uah === 'Free'
     ? '<div class="popup-free-badge">✓ Free entry</div>'
     : '<div class="popup-prices"><div class="popup-price-chip"><div class="currency">' + (p.type==='sight'?'Entry UAH':p.type==='hotel'?'Per night':'UAH / person') + '</div><div class="amount">' + p.uah + '</div></div><div class="popup-price-chip"><div class="currency">EUR</div><div class="amount">' + convertUahPrice(p.uah, exchangeRates.eur, '€') + '</div></div><div class="popup-price-chip"><div class="currency">GBP</div><div class="amount">' + convertUahPrice(p.uah, exchangeRates.gbp, '£') + '</div></div></div>';
-  const setBaseOnclick = 'setHomeBase(' + p.lat + ',' + p.lng + ',\'' + p.name.replace(/'/g, "\\'") + '\',true,' + p.id + ');';
+  const setBaseOnclick = 'event.stopPropagation();setHomeBase(' + p.lat + ',' + p.lng + ',\'' + p.name.replace(/'/g, "\\'") + '\',true,' + p.id + ');';
   const isFirstBase = p.type === 'hotel' && !homeBaseSet;
   const setBaseBtn = p.type === 'hotel' && !isFirstBase
-    ? '<button class="popup-action-btn btn-base" onclick="' + setBaseOnclick + '">📍 Set as Base</button>'
+    ? '<button class="popup-action-btn btn-base" onclick="' + setBaseOnclick + '">📍 Set as your hotel</button>'
     : '';
   const setBasePrimary = isFirstBase
-    ? '<div class="popup-base-cta"><button class="btn-base-primary" onclick="' + setBaseOnclick + '">📍 Set as Your Base</button></div>'
+    ? '<div class="popup-base-cta"><button class="btn-base-primary" onclick="' + setBaseOnclick + '">📍 Set as your hotel</button></div>'
     : '';
-  const starBtn = '<button id="star-btn-' + p.id + '" class="popup-action-btn btn-star" onclick="toggleStar(' + p.id + ')">' + (starredId === p.id ? '★ Starred' : '☆ Star') + '</button>';
+  const starBtn = '<button id="star-btn-' + p.id + '" class="popup-action-btn btn-star" onclick="event.stopPropagation();toggleStar(' + p.id + ')">' + (starredId === p.id ? '★ Starred' : '☆ Star') + '</button>';
   const actionsHtml = setBasePrimary + '<div class="popup-actions">' +
     '<button class="popup-action-btn btn-directions" onclick="event.stopPropagation();window.open(\'' + gmapsUrl(p) + '\',\'_blank\')">🧭 Google Maps</button>' +
-    '<button class="popup-action-btn btn-itinerary" onclick="addToItinerary(' + p.id + ')">📋 Route</button>' +
-    '<button id="visited-btn-' + p.id + '" class="popup-action-btn btn-visited" onclick="toggleVisited(' + p.id + ')">' + (visited.has(p.id) ? '✓ Visited' : '☐ Visited') + '</button>' +
+    '<button class="popup-action-btn btn-itinerary" onclick="event.stopPropagation();addToItinerary(' + p.id + ')">📋 Route</button>' +
+    '<button id="visited-btn-' + p.id + '" class="popup-action-btn btn-visited" onclick="event.stopPropagation();toggleVisited(' + p.id + ')">' + (visited.has(p.id) ? '✓ Visited' : '☐ Visited') + '</button>' +
     starBtn + setBaseBtn +
     '</div>';
 
@@ -931,7 +931,7 @@ function resetHomeBase() {
   places.forEach(p => { p.walk = ''; p.walkKm = null; });
   // Update label
   const label = document.getElementById('homebase-label');
-  if (label) label.textContent = '📍 My Base';
+  if (label) label.textContent = '📍 My hotel';
   // Hide reset button
   const resetBtn = document.getElementById('reset-base-btn');
   if (resetBtn) resetBtn.style.display = 'none';
@@ -1063,7 +1063,7 @@ function init() {
   if (!homeBaseSet) {
     const toast = document.createElement('div');
     toast.id = 'base-hint';
-    toast.innerHTML = '📍 <strong>Tip:</strong> Tap any hotel and "Set as Base" to get walking distances from your stay.';
+    toast.innerHTML = '📍 <strong>Tip:</strong> Tap any hotel and "Set as your hotel" to get walking distances from your stay.';
     const isMobileNow = isMobile();
     toast.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);background:rgba(26,58,92,0.97);color:#fff;padding:12px 20px;border-radius:12px;font-size:13px;font-family:DM Sans,sans-serif;z-index:2000;max-width:420px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.3);cursor:pointer;'
       + (isMobileNow ? 'top:52px;bottom:auto;max-width:calc(100vw - 32px);' : 'bottom:24px;backdrop-filter:blur(8px);');
