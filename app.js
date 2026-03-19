@@ -45,7 +45,7 @@ let currentFilter = 'all';
 let currentSort = 'default';
 let sidebarOpen = true;
 let sheetState = 'collapsed'; // 'hidden' | 'collapsed' | 'open' | 'detail'
-let mobileDetailPlaceId = null;
+
 let activePinId = null;
 const mobileQuery = window.matchMedia('(max-width: 768px)');
 let itineraryMode = false;
@@ -70,6 +70,7 @@ let activeTileLayer;
 async function fetchExchangeRates() {
   try {
     const resp = await fetch('https://open.er-api.com/v6/latest/UAH');
+    if (!resp.ok) throw new Error(resp.status);
     const data = await resp.json();
     if (data && data.rates) {
       const gbpRate = Math.round(1 / data.rates.GBP);
@@ -419,6 +420,7 @@ async function fetchWalkingRoute(from, to) {
   });
   try {
     const resp = await fetch('https://valhalla1.openstreetmap.de/route?json=' + encodeURIComponent(valhallaJson));
+    if (!resp.ok) throw new Error(resp.status);
     const data = await resp.json();
     if (data.trip && data.trip.legs && data.trip.legs.length > 0) {
       const shape = data.trip.legs[0].shape;
@@ -437,6 +439,7 @@ async function fetchWalkingRoute(from, to) {
       from.lng + ',' + from.lat + ';' + to.lng + ',' + to.lat +
       '?overview=full&geometries=geojson';
     const resp = await fetch(url);
+    if (!resp.ok) throw new Error(resp.status);
     const data = await resp.json();
     if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
       const route = data.routes[0];
@@ -460,6 +463,7 @@ async function fetchMultiStopRoute(stops) {
   });
   try {
     const resp = await fetch('https://valhalla1.openstreetmap.de/route?json=' + encodeURIComponent(valhallaJson));
+    if (!resp.ok) throw new Error(resp.status);
     const data = await resp.json();
     if (data.trip && data.trip.legs) {
       // Combine all leg shapes into one coordinate array
@@ -484,6 +488,7 @@ async function fetchMultiStopRoute(stops) {
     const url = 'https://router.project-osrm.org/route/v1/foot/' + coordStr +
       '?overview=full&geometries=geojson&steps=false';
     const resp = await fetch(url);
+    if (!resp.ok) throw new Error(resp.status);
     const data = await resp.json();
     if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
       const route = data.routes[0];
@@ -574,11 +579,11 @@ async function updateItinerarySummary() {
   }
   clearEl.style.display = 'block';
   sumEl.style.display = 'block';
-  const names = itinerary.map((id, i) => (i + 1) + '. ' + places.find(p => p.id === id).name);
+  const itinPlaces = itinerary.map(id => places.find(p => p.id === id)).filter(Boolean);
+  const names = itinPlaces.map((p, i) => (i + 1) + '. ' + p.name);
 
   // Quick haversine estimate first
   let totalKm = 0;
-  const itinPlaces = itinerary.map(id => places.find(p => p.id === id));
   const routeStops = homeBaseSet ? [homeBase, ...itinPlaces] : itinPlaces;
   for (let i = 1; i < routeStops.length; i++) {
     totalKm += haversine(routeStops[i-1].lat, routeStops[i-1].lng, routeStops[i].lat, routeStops[i].lng);
@@ -599,7 +604,7 @@ async function drawItineraryRoute() {
     return;
   }
 
-  const itinPlaces = itinerary.map(id => places.find(p => p.id === id));
+  const itinPlaces = itinerary.map(id => places.find(p => p.id === id)).filter(Boolean);
   const stops = homeBaseSet ? [homeBase, ...itinPlaces] : itinPlaces;
   const info = document.getElementById('route-info');
 
@@ -784,7 +789,8 @@ function gmapsUrl(p) {
 function gmapsItineraryUrl() {
   if (itinerary.length === 0) return '#';
   const origin = homeBase;
-  const stops = itinerary.map(id => places.find(p => p.id === id));
+  const stops = itinerary.map(id => places.find(p => p.id === id)).filter(Boolean);
+  if (stops.length === 0) return '#';
   const dest = stops[stops.length - 1];
   const waypoints = stops.slice(0, -1);
   let url = 'https://www.google.com/maps/dir/?api=1' +
@@ -815,7 +821,7 @@ function toggleVisited(id) {
   } else {
     visited.add(id);
   }
-  localStorage.setItem('kyiv-visited', JSON.stringify([...visited]));
+  try { localStorage.setItem('kyiv-visited', JSON.stringify([...visited])); } catch (e) {}
   updateMarkerStyle(id);
   renderList();
   // Update popup button if open
@@ -829,10 +835,10 @@ function toggleVisited(id) {
 function toggleStar(id) {
   if (starredId === id) {
     starredId = null;
-    localStorage.removeItem('kyiv-starred');
+    try { localStorage.removeItem('kyiv-starred'); } catch (e) {}
   } else {
     starredId = id;
-    localStorage.setItem('kyiv-starred', id);
+    try { localStorage.setItem('kyiv-starred', id); } catch (e) {}
   }
   // Update star button if visible
   const btn = document.getElementById('star-btn-' + id);
