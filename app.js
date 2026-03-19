@@ -1,39 +1,39 @@
 const places = [
-  { id:1,  type:'restaurant', emoji:'🍽', name:'KANAPA',                                cuisine:'Modern Ukrainian',         uah:'500–900',   eur:'€10–18',   gbp:'£8.50–15', note:'Borscht with pampushki, varenyky, Chicken Kyiv. Terrace with city views on Andriyivskyy Descent.', lat:50.4598574, lng:30.5165903, walk:'12 min · 1.0 km', walkKm:1.0, headerGrad:'linear-gradient(135deg,#C9A84C,#e0c46e)', hours:'10:00–00:00', url:'https://visitkyiv.com/explore/kanapa/' },
-  { id:2,  type:'restaurant', emoji:'🍽', name:'Ulyublenyi Dyadya',                     cuisine:'Mediterranean / Middle Eastern', uah:'600–1,000', eur:'€12–20',   gbp:'£10–17',   note:'Award-winning. Moroccan, Israeli, Turkish & Greek influences. Warm upscale atmosphere — book ahead.', lat:50.438297, lng:30.501079, walk:'31 min · 2.5 km', walkKm:2.5, headerGrad:'linear-gradient(135deg,#8B6914,#C9A84C)', hours:'08:00–22:00', url:'https://visitkyiv.com/explore/ulublenyi-diadia/' },
-  { id:3,  type:'restaurant', emoji:'🍽', name:'Ostannya Barykada',                     cuisine:'Traditional Ukrainian',     uah:'400–750',   eur:'€8–15',    gbp:'£7–13',    note:'Hidden underground at Maidan. Entry requires a password: "Boritesya — poborete" (Fight — and you shall overcome).', lat:50.4512159, lng:30.5221697, walk:'10 min · 0.8 km', walkKm:0.8, headerGrad:'linear-gradient(135deg,#6b5a1f,#a89033)', hours:'11:00–00:00', url:'https://kyivguide.com.ua/the-last-barricade/' },
-  { id:4,  type:'restaurant', emoji:'🍽', name:'BEEF Meat & Wine',                      cuisine:'Steakhouse',                uah:'800–1,500', eur:'€16–30',   gbp:'£14–25',   note:'Industrial-chic. Open kitchen cooking over natural coals. Dry-aged steak, carpaccio, roast beef.', lat:50.439046, lng:30.520744, walk:'27 min · 2.1 km', walkKm:2.1, headerGrad:'linear-gradient(135deg,#5a3e1b,#8B6914)', hours:'09:00–23:00', url:'https://beef.kyiv.ua/en/' },
-  { id:5,  type:'restaurant', emoji:'🍽', name:'Catch Seafood',                         cuisine:'Seafood',                   uah:'900–1,800', eur:'€18–36',   gbp:'£15–30',   note:'Top-rated seafood in Kyiv. Live king crab tank. City views. Menu changes with daily catch.', lat:50.4558549, lng:30.517039, walk:'6 min · 0.4 km', walkKm:0.4, headerGrad:'linear-gradient(135deg,#2E6EA6,#5a9fd4)', hours:'12:00–23:00', url:'https://famiglia.com.ua/en/catch/' },
-  { id:6,  type:'restaurant', emoji:'🍽', name:'Pizzeria Napule',                       cuisine:'Neapolitan Pizza',          uah:'300–550',   eur:'€6–11',    gbp:'£5–9',     note:'AVPN certified. Wood-fired oven, materials sourced from Naples. 30+ varieties. Pioneer of real Neapolitan pizza in Kyiv.', lat:50.437864, lng:30.533683, walk:'36 min · 2.9 km', walkKm:2.9, headerGrad:'linear-gradient(135deg,#b8432c,#e07a5a)', hours:'11:00–22:00', url:'https://gusovsky.com.ua/en/restaurant/pizzeria-napule' },
-  { id:7,  type:'restaurant', emoji:'🍽', name:'Urban Space 500',                       cuisine:'Contemporary Ukrainian',    uah:'500–900',   eur:'€10–18',   gbp:'£8.50–15', note:'Social enterprise — 80% of profits go to city development projects. Innovative seasonal menu.', lat:50.4490951, lng:30.5204184, walk:'10 min · 0.8 km', walkKm:0.8, headerGrad:'linear-gradient(135deg,#3a7a3a,#6ab06a)', hours:'09:00–23:00', url:'https://urbanspace.if.ua/en' },
-  { id:8,  type:'restaurant', emoji:'🍽', name:'Vino e Cucina',                         cuisine:'Italian Enoteca',           uah:'700–1,300', eur:'€14–26',   gbp:'£12–22',   note:'Enoteca concept with exceptional wine list. Risotto in cheese wheel. For gourmets and hedonists.', lat:50.458232, lng:30.487416, walk:'32 min · 2.6 km', walkKm:2.6, headerGrad:'linear-gradient(135deg,#6B1A5C,#a84c96)', hours:'12:00–00:00', url:'https://famiglia.com.ua/en/vino-e-cucina/' },
-  { id:9,  type:'restaurant', emoji:'🍽', name:'Puzata Hata',                           cuisine:'Ukrainian Canteen',         uah:'80–200',    eur:'€1.60–4',  gbp:'£1.35–3.40', note:'Self-service chain where locals eat daily. No frills. Borscht, varenyky, holubtsi — whatever is hot.', lat:50.4476187, lng:30.5239113, walk:'15 min · 1.2 km', walkKm:1.2, headerGrad:'linear-gradient(135deg,#C9A84C,#f0d87a)', hours:'08:00–22:00', url:'https://www.facebook.com/PuzataHata/' },
-  { id:10, type:'sight',      emoji:'🏛', name:'Kyiv Pechersk Lavra',                   cuisine:'UNESCO Monastery',          uah:'80–250',    eur:'€1.60–5',  gbp:'£1.35–4.25', note:'Top sight in Kyiv. Underground tunnels with mummified monks — explore by candlelight. UNESCO World Heritage.', lat:50.4349385, lng:30.5573187, walk:'60 min · 4.8 km', walkKm:4.8, headerGrad:'linear-gradient(135deg,#1A3A5C,#2E6EA6)', hours:'08:30–18:00', url:'https://lavra.ua/en/' },
-  { id:11, type:'sight',      emoji:'🏛', name:"St. Sophia's Cathedral",                cuisine:'UNESCO Cathedral',          uah:'160–220',   eur:'€3.20–4.40', gbp:'£2.70–3.75', note:'Original 11th-century mosaics and frescoes. Climb the bell tower for panoramic views over old Kyiv.', lat:50.4529022, lng:30.5142035, walk:'1 min · next door', walkKm:0.05, headerGrad:'linear-gradient(135deg,#2E6EA6,#6BAED6)', hours:'10:00–18:00', url:'https://en.wikipedia.org/wiki/Saint_Sophia_Cathedral,_Kyiv' },
-  { id:12, type:'sight',      emoji:'🏛', name:"St. Michael's Golden-Domed Monastery",  cuisine:'Monastery',                 uah:'Free',      eur:'Free',     gbp:'Free',     note:'Striking blue and gold exterior. Rebuilt after the Soviets demolished the original in 1937.', lat:50.4558456, lng:30.5230134, walk:'11 min · 0.9 km', walkKm:0.9, headerGrad:'linear-gradient(135deg,#1565C0,#42A5F5)', hours:'07:00–19:00', url:'https://en.wikipedia.org/wiki/St._Michael%27s_Golden-Domed_Monastery' },
-  { id:13, type:'sight',      emoji:'🏛', name:'Andriyivskyy Descent',                  cuisine:'Historic Street',           uah:'Free',      eur:'Free',     gbp:'Free',     note:"Artists, galleries, Bulgakov's house. Views from Zamkova Hora. Called the Montmartre of Kyiv.", lat:50.4598069, lng:30.5161398, walk:'12 min · 1.0 km', walkKm:1.0, headerGrad:'linear-gradient(135deg,#4A148C,#9C27B0)', hours:'All day', url:'https://kyivguide.com.ua/andriyivskyy-descent/' },
-  { id:14, type:'sight',      emoji:'🏛', name:'Motherland Monument',                   cuisine:'Monument / War Museum',     uah:'~100',      eur:'~€2',      gbp:'~£1.70',   note:'102m steel-and-titanium statue (62m figure on 40m base). Viewing platform inside the head. Park full of tanks, planes, WW2 monuments.', lat:50.4265249, lng:30.5630521, walk:'74 min · 5.9 km', walkKm:5.9, headerGrad:'linear-gradient(135deg,#455A64,#78909C)', hours:'10:00–18:00', url:'https://warmuseum.kyiv.ua/en/visit' },
-  { id:15, type:'sight',      emoji:'🏛', name:'PinchukArtCentre',                      cuisine:'Contemporary Art',          uah:'Free',      eur:'Free',     gbp:'Free',     note:'Best contemporary art gallery in the city. Rotating exhibitions. Rooftop café on the 6th floor.', lat:50.4418397, lng:30.5213207, walk:'22 min · 1.8 km', walkKm:1.8, headerGrad:'linear-gradient(135deg,#E91E63,#F48FB1)', hours:'12:00–21:00 (Wed–Sun)', url:'https://pinchukartcentre.org/en' },
-  { id:16, type:'sight',      emoji:'🏛', name:'Independence Square (Maidan)',           cuisine:'Historic Square',           uah:'Free',      eur:'Free',     gbp:'Free',     note:'Central hub of Kyiv. Site of the 2014 revolution. Symbolic to all Ukrainians.', lat:50.4505318, lng:30.5229899, walk:'11 min · 0.9 km', walkKm:0.9, headerGrad:'linear-gradient(135deg,#F57F17,#FFD54F)', hours:'All day', url:'https://guide.kyivcity.gov.ua/en/places/maydanu-nezalezhnosti' },
-  { id:17, type:'sight',      emoji:'🏡', name:'Pyrohiv Open-Air Museum',                cuisine:'Folk Architecture Museum',  uah:'130',       eur:'~€2.60',   gbp:'~£2.20',   note:'Largest open-air museum in Ukraine. 300+ traditional structures from 16th–20th century villages across all regions. Plan 3–4 hours. Closed Wednesdays.', lat:50.3545, lng:30.5122, walk:'Far · ~11 km (taxi/bus)', walkKm:11.0, headerGrad:'linear-gradient(135deg,#2E7D32,#66BB6A)', hours:'09:00–18:00 (closed Wed)', url:'https://www.pyrohiv.com/' },
+  { id:1,  type:'restaurant', emoji:'🍽', name:'KANAPA',                                cuisine:'Modern Ukrainian',         uah:'500–900', note:'Borscht with pampushki, varenyky, Chicken Kyiv. Terrace with city views on Andriyivskyy Descent.', lat:50.4598574, lng:30.5165903, walk:'12 min · 1.0 km', walkKm:1.0, headerGrad:'linear-gradient(135deg,#C9A84C,#e0c46e)', hours:'10:00–00:00', url:'https://visitkyiv.com/explore/kanapa/' },
+  { id:2,  type:'restaurant', emoji:'🍽', name:'Ulyublenyi Dyadya',                     cuisine:'Mediterranean / Middle Eastern', uah:'600–1,000',   note:'Award-winning. Moroccan, Israeli, Turkish & Greek influences. Warm upscale atmosphere — book ahead.', lat:50.438297, lng:30.501079, walk:'31 min · 2.5 km', walkKm:2.5, headerGrad:'linear-gradient(135deg,#8B6914,#C9A84C)', hours:'08:00–22:00', url:'https://visitkyiv.com/explore/ulublenyi-diadia/' },
+  { id:3,  type:'restaurant', emoji:'🍽', name:'Ostannya Barykada',                     cuisine:'Traditional Ukrainian',     uah:'400–750',    note:'Hidden underground at Maidan. Entry requires a password: "Boritesya — poborete" (Fight — and you shall overcome).', lat:50.4512159, lng:30.5221697, walk:'10 min · 0.8 km', walkKm:0.8, headerGrad:'linear-gradient(135deg,#6b5a1f,#a89033)', hours:'11:00–00:00', url:'https://kyivguide.com.ua/the-last-barricade/' },
+  { id:4,  type:'restaurant', emoji:'🍽', name:'BEEF Meat & Wine',                      cuisine:'Steakhouse',                uah:'800–1,500',   note:'Industrial-chic. Open kitchen cooking over natural coals. Dry-aged steak, carpaccio, roast beef.', lat:50.439046, lng:30.520744, walk:'27 min · 2.1 km', walkKm:2.1, headerGrad:'linear-gradient(135deg,#5a3e1b,#8B6914)', hours:'09:00–23:00', url:'https://beef.kyiv.ua/en/' },
+  { id:5,  type:'restaurant', emoji:'🍽', name:'Catch Seafood',                         cuisine:'Seafood',                   uah:'900–1,800',   note:'Top-rated seafood in Kyiv. Live king crab tank. City views. Menu changes with daily catch.', lat:50.4558549, lng:30.517039, walk:'6 min · 0.4 km', walkKm:0.4, headerGrad:'linear-gradient(135deg,#2E6EA6,#5a9fd4)', hours:'12:00–23:00', url:'https://famiglia.com.ua/en/catch/' },
+  { id:6,  type:'restaurant', emoji:'🍽', name:'Pizzeria Napule',                       cuisine:'Neapolitan Pizza',          uah:'300–550',     note:'AVPN certified. Wood-fired oven, materials sourced from Naples. 30+ varieties. Pioneer of real Neapolitan pizza in Kyiv.', lat:50.437864, lng:30.533683, walk:'36 min · 2.9 km', walkKm:2.9, headerGrad:'linear-gradient(135deg,#b8432c,#e07a5a)', hours:'11:00–22:00', url:'https://gusovsky.com.ua/en/restaurant/pizzeria-napule' },
+  { id:7,  type:'restaurant', emoji:'🍽', name:'Urban Space 500',                       cuisine:'Contemporary Ukrainian',    uah:'500–900', note:'Social enterprise — 80% of profits go to city development projects. Innovative seasonal menu.', lat:50.4490951, lng:30.5204184, walk:'10 min · 0.8 km', walkKm:0.8, headerGrad:'linear-gradient(135deg,#3a7a3a,#6ab06a)', hours:'09:00–23:00', url:'https://urbanspace.if.ua/en' },
+  { id:8,  type:'restaurant', emoji:'🍽', name:'Vino e Cucina',                         cuisine:'Italian Enoteca',           uah:'700–1,300',   note:'Enoteca concept with exceptional wine list. Risotto in cheese wheel. For gourmets and hedonists.', lat:50.458232, lng:30.487416, walk:'32 min · 2.6 km', walkKm:2.6, headerGrad:'linear-gradient(135deg,#6B1A5C,#a84c96)', hours:'12:00–00:00', url:'https://famiglia.com.ua/en/vino-e-cucina/' },
+  { id:9,  type:'restaurant', emoji:'🍽', name:'Puzata Hata',                           cuisine:'Ukrainian Canteen',         uah:'80–200', note:'Self-service chain where locals eat daily. No frills. Borscht, varenyky, holubtsi — whatever is hot.', lat:50.4476187, lng:30.5239113, walk:'15 min · 1.2 km', walkKm:1.2, headerGrad:'linear-gradient(135deg,#C9A84C,#f0d87a)', hours:'08:00–22:00', url:'https://www.facebook.com/PuzataHata/' },
+  { id:10, type:'sight',      emoji:'🏛', name:'Kyiv Pechersk Lavra',                   cuisine:'UNESCO Monastery',          uah:'80–250', note:'Top sight in Kyiv. Underground tunnels with mummified monks — explore by candlelight. UNESCO World Heritage.', lat:50.4349385, lng:30.5573187, walk:'60 min · 4.8 km', walkKm:4.8, headerGrad:'linear-gradient(135deg,#1A3A5C,#2E6EA6)', hours:'08:30–18:00', url:'https://lavra.ua/en/' },
+  { id:11, type:'sight',      emoji:'🏛', name:"St. Sophia's Cathedral",                cuisine:'UNESCO Cathedral',          uah:'160–220', note:'Original 11th-century mosaics and frescoes. Climb the bell tower for panoramic views over old Kyiv.', lat:50.4529022, lng:30.5142035, walk:'1 min · next door', walkKm:0.05, headerGrad:'linear-gradient(135deg,#2E6EA6,#6BAED6)', hours:'10:00–18:00', url:'https://en.wikipedia.org/wiki/Saint_Sophia_Cathedral,_Kyiv' },
+  { id:12, type:'sight',      emoji:'🏛', name:"St. Michael's Golden-Domed Monastery",  cuisine:'Monastery',                 uah:'Free',     note:'Striking blue and gold exterior. Rebuilt after the Soviets demolished the original in 1937.', lat:50.4558456, lng:30.5230134, walk:'11 min · 0.9 km', walkKm:0.9, headerGrad:'linear-gradient(135deg,#1565C0,#42A5F5)', hours:'07:00–19:00', url:'https://en.wikipedia.org/wiki/St._Michael%27s_Golden-Domed_Monastery' },
+  { id:13, type:'sight',      emoji:'🏛', name:'Andriyivskyy Descent',                  cuisine:'Historic Street',           uah:'Free',     note:"Artists, galleries, Bulgakov's house. Views from Zamkova Hora. Called the Montmartre of Kyiv.", lat:50.4598069, lng:30.5161398, walk:'12 min · 1.0 km', walkKm:1.0, headerGrad:'linear-gradient(135deg,#4A148C,#9C27B0)', hours:'All day', url:'https://kyivguide.com.ua/andriyivskyy-descent/' },
+  { id:14, type:'sight',      emoji:'🏛', name:'Motherland Monument',                   cuisine:'Monument / War Museum',     uah:'~100',   note:'102m steel-and-titanium statue (62m figure on 40m base). Viewing platform inside the head. Park full of tanks, planes, WW2 monuments.', lat:50.4265249, lng:30.5630521, walk:'74 min · 5.9 km', walkKm:5.9, headerGrad:'linear-gradient(135deg,#455A64,#78909C)', hours:'10:00–18:00', url:'https://warmuseum.kyiv.ua/en/visit' },
+  { id:15, type:'sight',      emoji:'🏛', name:'PinchukArtCentre',                      cuisine:'Contemporary Art',          uah:'Free',     note:'Best contemporary art gallery in the city. Rotating exhibitions. Rooftop café on the 6th floor.', lat:50.4418397, lng:30.5213207, walk:'22 min · 1.8 km', walkKm:1.8, headerGrad:'linear-gradient(135deg,#E91E63,#F48FB1)', hours:'12:00–21:00 (Wed–Sun)', url:'https://pinchukartcentre.org/en' },
+  { id:16, type:'sight',      emoji:'🏛', name:'Independence Square (Maidan)',           cuisine:'Historic Square',           uah:'Free',     note:'Central hub of Kyiv. Site of the 2014 revolution. Symbolic to all Ukrainians.', lat:50.4505318, lng:30.5229899, walk:'11 min · 0.9 km', walkKm:0.9, headerGrad:'linear-gradient(135deg,#F57F17,#FFD54F)', hours:'All day', url:'https://guide.kyivcity.gov.ua/en/places/maydanu-nezalezhnosti' },
+  { id:17, type:'sight',      emoji:'🏡', name:'Pyrohiv Open-Air Museum',                cuisine:'Folk Architecture Museum',  uah:'130',   note:'Largest open-air museum in Ukraine. 300+ traditional structures from 16th–20th century villages across all regions. Plan 3–4 hours. Closed Wednesdays.', lat:50.3547, lng:30.5063, walk:'Far · ~11 km (taxi/bus)', walkKm:11.0, headerGrad:'linear-gradient(135deg,#2E7D32,#66BB6A)', hours:'09:00–18:00 (closed Wed)', url:'https://www.pyrohiv.com/' },
   // Hotels
-  { id:18, type:'hotel', emoji:'🏨', name:'Sofiivska St 19',                     cuisine:'Boutique Hotel',         uah:'~2,500–4,000', eur:'~€50–80', gbp:'~£50–85',  note:'In the heart of old Kyiv, steps from St. Sophia\'s Cathedral and Mykhailivska Square.', lat:50.4520, lng:30.5181, walk:'1 min · next door', walkKm:0.05, headerGrad:'linear-gradient(135deg,#8B5CF6,#e8857f)', hours:'24h', url:null },
-  { id:19, type:'hotel', emoji:'🏨', name:'InterContinental Kyiv',               cuisine:'5★ Luxury',              uah:'~8,000–15,000', eur:'~€160–300', gbp:'~£160–310', note:'272 rooms. Four restaurants, rooftop lounge, indoor pool, spa. Panoramic views of golden-domed city center. Favored by ambassadors since 2009.', lat:50.4557, lng:30.5192, walk:'5 min · 0.5 km', walkKm:0.5, headerGrad:'linear-gradient(135deg,#8B6914,#C9A84C)', hours:'24h', url:'https://www.ihg.com/intercontinental/hotels/us/en/kiev/kbpha/hoteldetail' },
-  { id:20, type:'hotel', emoji:'🏨', name:'Fairmont Grand Hotel Kyiv',           cuisine:'5★ Luxury',              uah:'~7,000–14,000', eur:'~€140–280', gbp:'~£145–290', note:'133 rooms starting at 40 sq m — most spacious in the city. 205 sq m Royal Residence. Marigold restaurant, Elixir SPA. Weekly classical concerts.', lat:50.4603, lng:30.5254, walk:'14 min · 1.3 km', walkKm:1.3, headerGrad:'linear-gradient(135deg,#8B6914,#C9A84C)', hours:'24h', url:'https://www.fairmont.com/en/hotels/kyiv/fairmont-grand-hotel-kyiv.html' },
-  { id:21, type:'hotel', emoji:'🏨', name:'Hyatt Regency Kyiv',                  cuisine:'5★ Luxury',              uah:'~6,500–12,000', eur:'~€130–240', gbp:'~£135–250', note:'234 rooms overlooking Old City. Grill Asia (Wine Spectator Award), rooftop Bar on 8, 20m indoor pool, full spa. 5 min to Maidan.', lat:50.4532, lng:30.5185, walk:'4 min · 0.4 km', walkKm:0.4, headerGrad:'linear-gradient(135deg,#8B6914,#C9A84C)', hours:'24h', url:'https://www.hyatt.com/hyatt-regency/en-US/kievh-hyatt-regency-kyiv' },
-  { id:22, type:'hotel', emoji:'🏨', name:'Premier Palace Hotel',                cuisine:'5★ Luxury',              uah:'~5,500–10,000', eur:'~€110–200', gbp:'~£115–210', note:'Kyiv\'s oldest luxury hotel, opened 1912. 289 rooms, pool, rooftop Terracotta, Japanese restaurant Ikigai.', lat:50.4438, lng:30.5108, walk:'16 min · 1.3 km', walkKm:1.3, headerGrad:'linear-gradient(135deg,#8B6914,#C9A84C)', hours:'24h', url:'https://premier-palace.phnr.com/en' },
-  { id:23, type:'hotel', emoji:'🏨', name:'Hilton Kyiv',                         cuisine:'5★ Luxury',              uah:'~5,000–9,500',  eur:'~€100–190', gbp:'~£100–200', note:'262 SmartHome-automated rooms. Park Kitchen (seafood open kitchen), full spa with heated indoor pool.', lat:50.4450, lng:30.5053, walk:'18 min · 1.4 km', walkKm:1.4, headerGrad:'linear-gradient(135deg,#8B6914,#C9A84C)', hours:'24h', url:'https://www.hilton.com/en/hotels/kbphihi-hilton-kyiv/' },
-  { id:24, type:'hotel', emoji:'🏨', name:'11 Mirrors Design Hotel',             cuisine:'5★ Boutique',            uah:'~5,000–9,000',  eur:'~€100–180', gbp:'~£100–190', note:'50 rooms. Ukraine\'s first Design Hotels member, co-founded by Wladimir Klitschko. World\'s Best City Hotel 2016. Rooftop bar.', lat:50.4475, lng:30.5065, walk:'16 min · 1.3 km', walkKm:1.3, headerGrad:'linear-gradient(135deg,#6B1A5C,#a84c96)', hours:'24h', url:'https://11mirrors-hotel.com/' },
-  { id:25, type:'hotel', emoji:'🏨', name:'Opera Hotel',                         cuisine:'5★ Boutique',            uah:'~4,500–8,500',  eur:'~€90–170',  gbp:'~£95–175',  note:'140 rooms in a 1906 monument. Themed suites. Teatro restaurant, Wine Spectator Award.', lat:50.4481, lng:30.5001, walk:'20 min · 1.6 km', walkKm:1.6, headerGrad:'linear-gradient(135deg,#6B1A5C,#a84c96)', hours:'24h', url:'https://www.opera-hotel.com' },
-  { id:26, type:'hotel', emoji:'🏨', name:'BURSA Hotel',                         cuisine:'4★ Boutique',            uah:'~3,500–7,000',  eur:'~€70–140',  gbp:'~£72–145',  note:'33 rooms in two connected historic buildings. Balbek Bureau design. Art gallery, Bar 1818 rooftop, SUPRA restaurant, KINO42 cinema.', lat:50.4656, lng:30.5136, walk:'18 min · 1.4 km', walkKm:1.4, headerGrad:'linear-gradient(135deg,#6B1A5C,#a84c96)', hours:'24h', url:'https://bursa.cc/' },
-  { id:27, type:'hotel', emoji:'🏨', name:'MaNNa Boutique Hotel',                cuisine:'4★ Adults Only',         uah:'~3,000–6,000',  eur:'~€60–120',  gbp:'~£62–125',  note:'7 individually designed rooms with handmade ceramics, custom furniture, freestanding bathtubs. Adults-only. TripAdvisor 5/5.', lat:50.4598, lng:30.5153, walk:'12 min · 1.0 km', walkKm:1.0, headerGrad:'linear-gradient(135deg,#6B1A5C,#a84c96)', hours:'24h', url:'https://www.manna-hotel.com/en' },
-  { id:28, type:'hotel', emoji:'🏨', name:'Vozdvyzhensky Hotel',                 cuisine:'4★ Boutique',            uah:'~2,800–5,500',  eur:'~€56–110',  gbp:'~£58–115',  note:'33 rooms in 19th-century pastel buildings. Celebrated terrace restaurant. 5 min to St. Andrew\'s Church and Andriyivsky Descent.', lat:50.4593, lng:30.5155, walk:'12 min · 1.0 km', walkKm:1.0, headerGrad:'linear-gradient(135deg,#6B1A5C,#a84c96)', hours:'24h', url:'https://vozd-hotel.com/en/' },
-  { id:29, type:'hotel', emoji:'🏨', name:'Staro Hotel',                         cuisine:'4★ Mid-Range',           uah:'~3,400',        eur:'~€68',      gbp:'~£70',      note:'35 rooms, Art Nouveau style inspired by Alphonse Mucha. TripAdvisor Travelers\' Choice. Tennis court, outstanding breakfast.', lat:50.4694, lng:30.5086, walk:'25 min · 2.1 km', walkKm:2.1, headerGrad:'linear-gradient(135deg,#3a7a3a,#6ab06a)', hours:'24h', url:'https://staro.ua/' },
-  { id:30, type:'hotel', emoji:'🏨', name:'KONTRAKT Hotel',                      cuisine:'3★ Mid-Range',           uah:'~2,000–3,500',  eur:'~€40–70',   gbp:'~£41–72',   note:'17 rooms, Danish hygge style. Rated 9.5/10 on Booking.com. All-day coffee buffet. One block from Kontraktova Square.', lat:50.4661, lng:30.5192, walk:'20 min · 1.6 km', walkKm:1.6, headerGrad:'linear-gradient(135deg,#3a7a3a,#6ab06a)', hours:'24h', url:'https://kontrakthotel.com/en/' },
-  { id:31, type:'hotel', emoji:'🏨', name:'Bontiak Hotel',                       cuisine:'4★ Mid-Range',           uah:'~1,800–3,000',  eur:'~€36–60',   gbp:'~£37–62',   note:'42 designer rooms with fireplaces, coffee makers, mini-kitchens. 200m from Golden Gate metro. Rated 8.9 on Booking.com.', lat:50.4515, lng:30.5169, walk:'6 min · 0.5 km', walkKm:0.5, headerGrad:'linear-gradient(135deg,#3a7a3a,#6ab06a)', hours:'24h', url:'https://bontiak.com/en/' },
-  { id:32, type:'hotel', emoji:'🏨', name:'ibis Kyiv City Center',               cuisine:'3★ Budget',              uah:'~2,200',        eur:'~€44',      gbp:'~£46',      note:'210 rooms across from St. Volodymyr\'s Cathedral. 1.5 km to Golden Gate, 2 km to Sofia Square. Bar, restaurant, 4 conference halls.', lat:50.4453, lng:30.4985, walk:'22 min · 1.7 km', walkKm:1.7, headerGrad:'linear-gradient(135deg,#455A64,#78909C)', hours:'24h', url:'https://all.accor.com/hotel/7143/index.en.shtml' },
-  { id:33, type:'hotel', emoji:'🏨', name:'ibis Kyiv Railway Station',           cuisine:'3★ Budget',              uah:'~2,100',        eur:'~€42',      gbp:'~£43',      note:'326 rooms. Breakfast from 4 AM. SkyBus airport shuttle at the door. Purpose-built for rail travelers.', lat:50.4400, lng:30.4849, walk:'35 min · 2.8 km', walkKm:2.8, headerGrad:'linear-gradient(135deg,#455A64,#78909C)', hours:'24h', url:'https://all.accor.com/hotel/A034/index.en.shtml' },
-  { id:34, type:'sight',  emoji:'🏛', name:'VDNH (Expocenter of Ukraine)',         cuisine:'Exhibition Complex / Park', uah:'Free',       eur:'Free',     gbp:'Free',     note:'287-hectare Soviet-era exhibition complex with 180+ buildings, 19 listed monuments. Now a cultural hub with a science museum, bike paths, fountains, and seasonal festivals. Bring a bike — it\'s enormous.', lat:50.3778, lng:30.4794, walk:'Far · ~9 km (taxi/metro)', walkKm:9.0, headerGrad:'linear-gradient(135deg,#2E7D32,#66BB6A)', hours:'07:00–22:00', url:'https://vdng.ua/' }
+  { id:18, type:'hotel', emoji:'🏨', name:'Sofiivska St 19',                     cuisine:'Boutique Hotel',         uah:'~2,500–4,000',  note:'In the heart of old Kyiv, steps from St. Sophia\'s Cathedral and Mykhailivska Square.', lat:50.4520, lng:30.5181, walk:'1 min · next door', walkKm:0.05, headerGrad:'linear-gradient(135deg,#8B5CF6,#e8857f)', hours:'24h', url:null },
+  { id:19, type:'hotel', emoji:'🏨', name:'InterContinental Kyiv',               cuisine:'5★ Luxury',              uah:'~8,000–15,000', note:'272 rooms. Four restaurants, rooftop lounge, indoor pool, spa. Panoramic views of golden-domed city center. Favored by ambassadors since 2009.', lat:50.4557, lng:30.5192, walk:'5 min · 0.5 km', walkKm:0.5, headerGrad:'linear-gradient(135deg,#8B6914,#C9A84C)', hours:'24h', url:'https://www.ihg.com/intercontinental/hotels/us/en/kiev/kbpha/hoteldetail' },
+  { id:20, type:'hotel', emoji:'🏨', name:'Fairmont Grand Hotel Kyiv',           cuisine:'5★ Luxury',              uah:'~7,000–14,000', note:'133 rooms starting at 40 sq m — most spacious in the city. 205 sq m Royal Residence. Marigold restaurant, Elixir SPA. Weekly classical concerts.', lat:50.4603, lng:30.5254, walk:'14 min · 1.3 km', walkKm:1.3, headerGrad:'linear-gradient(135deg,#8B6914,#C9A84C)', hours:'24h', url:'https://www.fairmont.com/en/hotels/kyiv/fairmont-grand-hotel-kyiv.html' },
+  { id:21, type:'hotel', emoji:'🏨', name:'Hyatt Regency Kyiv',                  cuisine:'5★ Luxury',              uah:'~6,500–12,000', note:'234 rooms overlooking Old City. Grill Asia (Wine Spectator Award), rooftop Bar on 8, 20m indoor pool, full spa. 5 min to Maidan.', lat:50.4532, lng:30.5185, walk:'4 min · 0.4 km', walkKm:0.4, headerGrad:'linear-gradient(135deg,#8B6914,#C9A84C)', hours:'24h', url:'https://www.hyatt.com/hyatt-regency/en-US/kievh-hyatt-regency-kyiv' },
+  { id:22, type:'hotel', emoji:'🏨', name:'Premier Palace Hotel',                cuisine:'5★ Luxury',              uah:'~5,500–10,000', note:'Kyiv\'s oldest luxury hotel, opened 1912. 289 rooms, pool, rooftop Terracotta, Japanese restaurant Ikigai.', lat:50.4438, lng:30.5108, walk:'16 min · 1.3 km', walkKm:1.3, headerGrad:'linear-gradient(135deg,#8B6914,#C9A84C)', hours:'24h', url:'https://premier-palace.phnr.com/en' },
+  { id:23, type:'hotel', emoji:'🏨', name:'Hilton Kyiv',                         cuisine:'5★ Luxury',              uah:'~5,000–9,500', note:'262 SmartHome-automated rooms. Park Kitchen (seafood open kitchen), full spa with heated indoor pool.', lat:50.4450, lng:30.5053, walk:'18 min · 1.4 km', walkKm:1.4, headerGrad:'linear-gradient(135deg,#8B6914,#C9A84C)', hours:'24h', url:'https://www.hilton.com/en/hotels/kbphihi-hilton-kyiv/' },
+  { id:24, type:'hotel', emoji:'🏨', name:'11 Mirrors Design Hotel',             cuisine:'5★ Boutique',            uah:'~5,000–9,000', note:'50 rooms. Ukraine\'s first Design Hotels member, co-founded by Wladimir Klitschko. World\'s Best City Hotel 2016. Rooftop bar.', lat:50.4475, lng:30.5065, walk:'16 min · 1.3 km', walkKm:1.3, headerGrad:'linear-gradient(135deg,#6B1A5C,#a84c96)', hours:'24h', url:'https://11mirrors-hotel.com/' },
+  { id:25, type:'hotel', emoji:'🏨', name:'Opera Hotel',                         cuisine:'5★ Boutique',            uah:'~4,500–8,500',  note:'140 rooms in a 1906 monument. Themed suites. Teatro restaurant, Wine Spectator Award.', lat:50.4481, lng:30.5001, walk:'20 min · 1.6 km', walkKm:1.6, headerGrad:'linear-gradient(135deg,#6B1A5C,#a84c96)', hours:'24h', url:'https://www.opera-hotel.com' },
+  { id:26, type:'hotel', emoji:'🏨', name:'BURSA Hotel',                         cuisine:'4★ Boutique',            uah:'~3,500–7,000',  note:'33 rooms in two connected historic buildings. Balbek Bureau design. Art gallery, Bar 1818 rooftop, SUPRA restaurant, KINO42 cinema.', lat:50.4656, lng:30.5136, walk:'18 min · 1.4 km', walkKm:1.4, headerGrad:'linear-gradient(135deg,#6B1A5C,#a84c96)', hours:'24h', url:'https://bursa.cc/' },
+  { id:27, type:'hotel', emoji:'🏨', name:'MaNNa Boutique Hotel',                cuisine:'4★ Adults Only',         uah:'~3,000–6,000',  note:'7 individually designed rooms with handmade ceramics, custom furniture, freestanding bathtubs. Adults-only. TripAdvisor 5/5.', lat:50.4598, lng:30.5153, walk:'12 min · 1.0 km', walkKm:1.0, headerGrad:'linear-gradient(135deg,#6B1A5C,#a84c96)', hours:'24h', url:'https://www.manna-hotel.com/en' },
+  { id:28, type:'hotel', emoji:'🏨', name:'Vozdvyzhensky Hotel',                 cuisine:'4★ Boutique',            uah:'~2,800–5,500',  note:'33 rooms in 19th-century pastel buildings. Celebrated terrace restaurant. 5 min to St. Andrew\'s Church and Andriyivsky Descent.', lat:50.4593, lng:30.5155, walk:'12 min · 1.0 km', walkKm:1.0, headerGrad:'linear-gradient(135deg,#6B1A5C,#a84c96)', hours:'24h', url:'https://vozd-hotel.com/en/' },
+  { id:29, type:'hotel', emoji:'🏨', name:'Staro Hotel',                         cuisine:'4★ Mid-Range',           uah:'~3,400',      note:'35 rooms, Art Nouveau style inspired by Alphonse Mucha. TripAdvisor Travelers\' Choice. Tennis court, outstanding breakfast.', lat:50.4694, lng:30.5086, walk:'25 min · 2.1 km', walkKm:2.1, headerGrad:'linear-gradient(135deg,#3a7a3a,#6ab06a)', hours:'24h', url:'https://staro.ua/' },
+  { id:30, type:'hotel', emoji:'🏨', name:'KONTRAKT Hotel',                      cuisine:'3★ Mid-Range',           uah:'~2,000–3,500',   note:'17 rooms, Danish hygge style. Rated 9.5/10 on Booking.com. All-day coffee buffet. One block from Kontraktova Square.', lat:50.4661, lng:30.5192, walk:'20 min · 1.6 km', walkKm:1.6, headerGrad:'linear-gradient(135deg,#3a7a3a,#6ab06a)', hours:'24h', url:'https://kontrakthotel.com/en/' },
+  { id:31, type:'hotel', emoji:'🏨', name:'Bontiak Hotel',                       cuisine:'4★ Mid-Range',           uah:'~1,800–3,000',   note:'42 designer rooms with fireplaces, coffee makers, mini-kitchens. 200m from Golden Gate metro. Rated 8.9 on Booking.com.', lat:50.4515, lng:30.5169, walk:'6 min · 0.5 km', walkKm:0.5, headerGrad:'linear-gradient(135deg,#3a7a3a,#6ab06a)', hours:'24h', url:'https://bontiak.com/en/' },
+  { id:32, type:'hotel', emoji:'🏨', name:'ibis Kyiv City Center',               cuisine:'3★ Budget',              uah:'~2,200',      note:'210 rooms across from St. Volodymyr\'s Cathedral. 1.5 km to Golden Gate, 2 km to Sofia Square. Bar, restaurant, 4 conference halls.', lat:50.4453, lng:30.4985, walk:'22 min · 1.7 km', walkKm:1.7, headerGrad:'linear-gradient(135deg,#455A64,#78909C)', hours:'24h', url:'https://all.accor.com/hotel/7143/index.en.shtml' },
+  { id:33, type:'hotel', emoji:'🏨', name:'ibis Kyiv Railway Station',           cuisine:'3★ Budget',              uah:'~2,100',      note:'326 rooms. Breakfast from 4 AM. SkyBus airport shuttle at the door. Purpose-built for rail travelers.', lat:50.4400, lng:30.4849, walk:'35 min · 2.8 km', walkKm:2.8, headerGrad:'linear-gradient(135deg,#455A64,#78909C)', hours:'24h', url:'https://all.accor.com/hotel/A034/index.en.shtml' },
+  { id:34, type:'sight',  emoji:'🏛', name:'VDNH (Expocenter of Ukraine)',         cuisine:'Exhibition Complex / Park', uah:'Free',     note:'287-hectare Soviet-era exhibition complex with 180+ buildings, 19 listed monuments. Now a cultural hub with a science museum, bike paths, fountains, and seasonal festivals. Bring a bike — it\'s enormous.', lat:50.3778, lng:30.4794, walk:'Far · ~9 km (taxi/metro)', walkKm:9.0, headerGrad:'linear-gradient(135deg,#2E7D32,#66BB6A)', hours:'07:00–22:00', url:'https://vdng.ua/' }
 ];
 
 // State
@@ -45,7 +45,7 @@ let currentFilter = 'all';
 let currentSort = 'default';
 let sidebarOpen = true;
 let sheetState = 'collapsed'; // 'hidden' | 'collapsed' | 'open' | 'detail'
-
+let mobileDetailPlaceId = null;
 let activePinId = null;
 const mobileQuery = window.matchMedia('(max-width: 768px)');
 let itineraryMode = false;
@@ -58,6 +58,22 @@ let homeBaseSet = false;
 let hotelsHidden = false;
 let selectedHotelId = null;
 let starredId = null;
+let exchangeRates = { gbp: 59, eur: 50 };
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function convertUahPrice(uahStr, rate, symbol) {
+  if (!uahStr || uahStr === 'Free' || uahStr === '—') return uahStr;
+  var prefix = uahStr.startsWith('~') ? '~' : '';
+  var nums = uahStr.match(/[\d,]+/g);
+  if (!nums) return uahStr;
+  var converted = nums.map(function(n) {
+    return Math.round(parseInt(n.replace(/,/g, ''), 10) / rate);
+  });
+  return prefix + symbol + converted.join('–');
+}
 
 const tileLayers = [
   { name:'Dark',      url:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' },
@@ -73,15 +89,15 @@ async function fetchExchangeRates() {
     if (!resp.ok) throw new Error(resp.status);
     const data = await resp.json();
     if (data && data.rates) {
-      const gbpRate = Math.round(1 / data.rates.GBP);
-      const eurRate = Math.round(1 / data.rates.EUR);
-      document.getElementById('rate-gbp').textContent = '£1 ≈ ' + gbpRate + ' UAH';
-      document.getElementById('rate-eur').textContent = '€1 ≈ ' + eurRate + ' UAH';
+      exchangeRates.gbp = Math.round(1 / data.rates.GBP);
+      exchangeRates.eur = Math.round(1 / data.rates.EUR);
     }
   } catch (e) {
-    document.getElementById('rate-gbp').textContent = '£1 ≈ 59 UAH';
-    document.getElementById('rate-eur').textContent = '€1 ≈ 50 UAH';
+    // keep defaults
   }
+  document.getElementById('rate-gbp').textContent = '£1 ≈ ' + exchangeRates.gbp + ' UAH';
+  document.getElementById('rate-eur').textContent = '€1 ≈ ' + exchangeRates.eur + ' UAH';
+  renderList();
 }
 
 function isMapDark() {
@@ -169,7 +185,7 @@ function buildPopupHtml(p) {
     ? ''
     : p.uah === 'Free'
     ? '<div class="popup-free-badge">✓ Free entry</div>'
-    : '<div class="popup-prices"><div class="popup-price-chip"><div class="currency">' + (p.type==='sight'?'Entry UAH':p.type==='hotel'?'Per night':'UAH / person') + '</div><div class="amount">' + p.uah + '</div></div><div class="popup-price-chip"><div class="currency">EUR</div><div class="amount">' + p.eur + '</div></div><div class="popup-price-chip"><div class="currency">GBP</div><div class="amount">' + p.gbp + '</div></div></div>';
+    : '<div class="popup-prices"><div class="popup-price-chip"><div class="currency">' + (p.type==='sight'?'Entry UAH':p.type==='hotel'?'Per night':'UAH / person') + '</div><div class="amount">' + p.uah + '</div></div><div class="popup-price-chip"><div class="currency">EUR</div><div class="amount">' + convertUahPrice(p.uah, exchangeRates.eur, '€') + '</div></div><div class="popup-price-chip"><div class="currency">GBP</div><div class="amount">' + convertUahPrice(p.uah, exchangeRates.gbp, '£') + '</div></div></div>';
   const setBaseOnclick = 'setHomeBase(' + p.lat + ',' + p.lng + ',\'' + p.name.replace(/'/g, "\\'") + '\',true,' + p.id + ');';
   const isFirstBase = p.type === 'hotel' && !homeBaseSet;
   const setBaseBtn = p.type === 'hotel' && !isFirstBase
@@ -235,7 +251,7 @@ function closeMobileDetail() {
   mobileDetailPlaceId = null;
   const detail = document.getElementById('detail-sheet');
   detail.style.display = 'none';
-  detail.innerHTML = '';
+  detail.textContent = '';
 
   // Revert active pin
   if (activePinId && markers[activePinId]) {
@@ -580,7 +596,7 @@ async function updateItinerarySummary() {
   clearEl.style.display = 'block';
   sumEl.style.display = 'block';
   const itinPlaces = itinerary.map(id => places.find(p => p.id === id)).filter(Boolean);
-  const names = itinPlaces.map((p, i) => (i + 1) + '. ' + p.name);
+  const names = itinPlaces.map((p, i) => (i + 1) + '. ' + escHtml(p.name));
 
   // Quick haversine estimate first
   let totalKm = 0;
@@ -750,7 +766,7 @@ function renderList() {
     }
   }
 
-  list.innerHTML = '';
+  list.textContent = '';
   filtered.forEach(p => {
     const div = document.createElement('div');
     const classes = ['place-item'];
@@ -760,7 +776,7 @@ function renderList() {
     div.id = 'item-' + p.id;
     div.onclick = () => selectPlace(p.id);
 
-    const priceDisplay = p.uah === '—' ? '' : p.uah === 'Free' ? 'Free' : p.gbp + ' / ' + p.eur;
+    const priceDisplay = p.uah === '—' ? '' : p.uah === 'Free' ? 'Free' : convertUahPrice(p.uah, exchangeRates.gbp, '£') + ' / ' + convertUahPrice(p.uah, exchangeRates.eur, '€');
     const walkDisplay = p.walk ? '<span class="walk-tag">🚶 ' + p.walk + '</span>' : '';
     const itinIdx = itinerary.indexOf(p.id);
     const starBadge = starredId === p.id ? '<span class="starred-badge">★</span>' : '';
@@ -772,8 +788,8 @@ function renderList() {
 
     div.innerHTML =
       '<div class="place-icon ' + p.type + '">' + p.emoji + '</div>' +
-      '<div class="place-info"><div class="place-name">' + p.name + '</div>' +
-      '<div class="place-meta"><span>' + p.cuisine + '</span>' +
+      '<div class="place-info"><div class="place-name">' + escHtml(p.name) + '</div>' +
+      '<div class="place-meta"><span>' + escHtml(p.cuisine) + '</span>' +
       '<span class="price-tag">' + priceDisplay + '</span>' + walkDisplay + '</div></div>' +
       starBadge + gmapsBtnHtml + badge;
     list.appendChild(div);
@@ -934,6 +950,30 @@ function detectGPS() {
   );
 }
 
+function bindEvents() {
+  document.getElementById('mobile-handle').addEventListener('click', toggleSidebar);
+  document.getElementById('sidebar-toggle').addEventListener('click', toggleSidebar);
+  document.getElementById('search-box').addEventListener('input', applyFilters);
+  document.querySelectorAll('[data-sort]').forEach(function(btn) {
+    btn.addEventListener('click', function() { setSort(this.dataset.sort, this); });
+  });
+  document.querySelectorAll('[data-filter]').forEach(function(btn) {
+    btn.addEventListener('click', function() { setFilter(this.dataset.filter, this); });
+  });
+  document.getElementById('itinerary-toggle').addEventListener('click', toggleItineraryMode);
+  document.getElementById('clear-itinerary').addEventListener('click', clearItinerary);
+  document.getElementById('ctrl-toggle').addEventListener('click', toggleMapControls);
+  document.getElementById('homebase-label').addEventListener('click', function() {
+    if (homeBase && map) map.setView([homeBase.lat, homeBase.lng], 16);
+    closeMapControls();
+  });
+  document.getElementById('reset-base-btn').addEventListener('click', function() { resetHomeBase(); closeMapControls(); });
+  document.getElementById('btn-detect-gps').addEventListener('click', function() { detectGPS(); closeMapControls(); });
+  document.getElementById('btn-fit-all').addEventListener('click', function() { fitAllMarkers(); closeMapControls(); });
+  document.getElementById('style-btn').addEventListener('click', function() { cycleMapStyle(); closeMapControls(); });
+  document.getElementById('btn-clear-route').addEventListener('click', clearRouteDisplay);
+}
+
 function fixMobileVh() {
   // Fix 100vh on mobile browsers that don't support dvh
   const vh = window.innerHeight * 0.01;
@@ -941,6 +981,8 @@ function fixMobileVh() {
 }
 
 function init() {
+  bindEvents();
+
   // Mobile viewport fix
   fixMobileVh();
   window.addEventListener('resize', fixMobileVh);

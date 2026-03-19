@@ -16,7 +16,7 @@
 <body>
 
 <div id="sidebar">
-  <div class="mobile-handle" onclick="toggleSidebar()">
+  <div class="mobile-handle" id="mobile-handle">
     <div class="mobile-handle-bar"></div>
   </div>
   <div id="sidebar-header">
@@ -29,24 +29,24 @@
   </div>
   <div id="search-sort">
     <div class="search-wrap">
-      <input type="text" id="search-box" placeholder="Search places..." oninput="applyFilters()">
+      <input type="text" id="search-box" placeholder="Search places...">
     </div>
     <div id="sort-row">
-      <button class="sort-btn active" onclick="setSort('default', this)">Default</button>
-      <button class="sort-btn" onclick="setSort('distance', this)">Distance ↑</button>
-      <button class="sort-btn" onclick="setSort('price-low', this)">Price ↑</button>
-      <button class="sort-btn" onclick="setSort('name', this)">A → Z</button>
+      <button class="sort-btn active" data-sort="default">Default</button>
+      <button class="sort-btn" data-sort="distance">Distance ↑</button>
+      <button class="sort-btn" data-sort="price-low">Price ↑</button>
+      <button class="sort-btn" data-sort="name">A → Z</button>
     </div>
   </div>
   <div id="filter-tabs">
-    <button class="tab active" onclick="setFilter('all', this)">All</button>
-    <button class="tab" onclick="setFilter('hotel', this)">🏨 Hotels</button>
-    <button class="tab" onclick="setFilter('restaurant', this)">🍽 Dining</button>
-    <button class="tab" onclick="setFilter('sight', this)">🏛 Sights</button>
+    <button class="tab active" data-filter="all">All</button>
+    <button class="tab" data-filter="hotel">🏨 Hotels</button>
+    <button class="tab" data-filter="restaurant">🍽 Dining</button>
+    <button class="tab" data-filter="sight">🏛 Sights</button>
   </div>
   <div id="itinerary-bar">
-    <button id="itinerary-toggle" onclick="toggleItineraryMode()">📋 Itinerary Mode</button>
-    <button id="clear-itinerary" onclick="clearItinerary()">✕ Clear</button>
+    <button id="itinerary-toggle">📋 Itinerary Mode</button>
+    <button id="clear-itinerary">✕ Clear</button>
   </div>
   <div id="itinerary-summary"><div class="summary-inner"><div class="summary-label">Your Route</div><div class="summary-text" id="itinerary-text"></div><a id="itinerary-gmaps-link" class="itinerary-gmaps-link" href="#" target="_blank" rel="noopener">🗺️ Open in Google Maps</a></div></div>
   <div id="place-list"></div>
@@ -55,18 +55,18 @@
 
 <div style="position:relative; flex:1;">
   <div id="map"></div>
-  <button id="sidebar-toggle" onclick="toggleSidebar()">
+  <button id="sidebar-toggle">
     <span id="toggle-icon">☰</span>
     <span class="label" id="toggle-label">Menu</span>
   </button>
   <div class="map-controls">
-    <button class="map-ctrl-toggle" id="ctrl-toggle" onclick="toggleMapControls()">☰</button>
+    <button class="map-ctrl-toggle" id="ctrl-toggle">☰</button>
     <div class="map-ctrl-group" id="ctrl-group">
-      <button class="map-ctrl-btn" id="homebase-label" onclick="if(homeBase&&map){map.setView([homeBase.lat,homeBase.lng],16);};closeMapControls()">📍 My Base</button>
-      <button class="map-ctrl-btn" id="reset-base-btn" onclick="resetHomeBase();closeMapControls()" style="display:none">↩ Reset Base</button>
-      <button class="map-ctrl-btn" onclick="detectGPS();closeMapControls()">◎ GPS</button>
-      <button class="map-ctrl-btn" onclick="fitAllMarkers();closeMapControls()">⊡ Fit All</button>
-      <button class="map-ctrl-btn" id="style-btn" onclick="cycleMapStyle();closeMapControls()">🗺 Dark</button>
+      <button class="map-ctrl-btn" id="homebase-label">📍 My Base</button>
+      <button class="map-ctrl-btn" id="reset-base-btn" style="display:none">↩ Reset Base</button>
+      <button class="map-ctrl-btn" id="btn-detect-gps">◎ GPS</button>
+      <button class="map-ctrl-btn" id="btn-fit-all">⊡ Fit All</button>
+      <button class="map-ctrl-btn" id="style-btn">🗺 Dark</button>
     </div>
   </div>
   <div class="route-info-box" id="route-info">
@@ -74,7 +74,7 @@
     <div class="route-stat"><div class="val" id="route-time">—</div><div class="lbl">Walking</div></div>
     <div class="route-stat"><div class="val" id="route-stops">—</div><div class="lbl">Stops</div></div>
     <a id="route-gmaps-btn" class="route-gmaps-btn" href="#" target="_blank" rel="noopener" title="Open in Google Maps">🗺️</a>
-    <button class="route-close" onclick="clearRouteDisplay()">✕</button>
+    <button class="route-close" id="btn-clear-route">✕</button>
   </div>
   <div id="legend">
     <div class="legend-item"><div class="legend-dot" style="background:#8B5CF6"></div>Hotel</div>
